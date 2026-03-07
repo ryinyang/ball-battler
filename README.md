@@ -1,6 +1,6 @@
 # Ball Battler
 
-A physics-based "Zero-Player Game" (Auto-Battler) where RPG-class-themed balls battle in an arena. Built with Python, Pygame, and Pymunk.
+A physics-based Auto-Battler where RPG-themed balls battle in an arena. Built with Python, Pygame, and Pymunk. Heavily inspired by Earclacks.
 
 ## Overview
 

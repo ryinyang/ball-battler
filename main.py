@@ -2,17 +2,35 @@ import pygame
 import pymunk
 from ball import Ball
 
+def handle_collision(arbiter, space, data):
+    shape_a, shape_b = arbiter.shapes
+    ball_a = shape_a.ball
+    ball_b = shape_b.ball
+    
+    # Damage Logic: max(1, Attack - Defense)
+    dmg_a = max(1, ball_b.attack - ball_a.defense)
+    dmg_b = max(1, ball_a.attack - ball_b.defense)
+    
+    ball_a.hp -= dmg_a
+    ball_b.hp -= dmg_b
+    
+    print(f"Collision Detected! A: {ball_a.hp} (-{dmg_a}) | B: {ball_b.hp} (-{dmg_b})")
+
 def main():
     # Initialize Pygame
     pygame.init()
+    
     WIDTH, HEIGHT = 800, 600
     screen = pygame.display.set_mode((WIDTH, HEIGHT))
-    pygame.display.set_caption("Ball Battler - Phase 0")
+    pygame.display.set_caption("Ball Battler - Phase 1")
     clock = pygame.time.Clock()
 
     # Initialize Pymunk Space
     space = pymunk.Space()
     space.gravity = (0, 900)  # Gravity pointing down
+
+    # Collision Handler
+    space.on_collision(1, 1, begin=handle_collision)
 
     # Create Arena Walls
     # 4 segments: Top, Bottom, Left, Right
@@ -44,6 +62,13 @@ def main():
         # Physics step
         dt = 1.0 / 60.0
         space.step(dt)
+
+        # Death Loop
+        for ball in balls[:]:
+            if ball.hp <= 0:
+                space.remove(ball.body, ball.shape)
+                balls.remove(ball)
+                print("Ball eliminated!")
 
         # Drawing
         screen.fill((0, 0, 0))

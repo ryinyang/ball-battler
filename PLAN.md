@@ -29,7 +29,18 @@ In this phase, we move from "bouncing balls" to "battling balls" by introducing 
         Damage=max(1,Attackeratk​−Defenderdef​)
     - **Death Loop**: If a ball's `hp` drops to 0 or below, safely remove its body and shape from the Pymunk space and its instance from the Pygame render list.
 ---
-## Phase 2: RPG Classes & Scaling Weapons
+## Phase 2: Basic UI & Physics Tweaks
+
+In this phase, we add some basic UI to keep track of the main stats of each ball and tweak the physics.
+
+- **Basic UI**: 
+    - **Name and Status**: On either side of the arena, show the HP, of each ball
+- **Physics Tweaks**:
+    - When the balls collide, add a small amount of velocity ~1%
+    - Colliding with walls should not reduce the velocity
+    - Add an attraction force between balls. As they get closer to each other, they accelerate a towards each other. Ensure this attraction force is much smaller than the gravity force.
+---
+## Phase 3: RPG Classes & Scaling Weapons
 
 This is where the "auto-battler" strategy shines. Each class gets a unique combat style and a specific stat that scales dynamically upon a successful weapon hit.
 
@@ -44,7 +55,7 @@ This is where the "auto-battler" strategy shines. Each class gets a unique comba
 |               |                                          |                                                                                      |
 
 ---
-## Phase 3: Custom Arenas & Obstacles
+## Phase 4: Custom Arenas & Obstacles
 
 Once combat is functional, it's time to extend the environment beyond a simple box to create tactical depth.
 
@@ -52,7 +63,7 @@ Once combat is functional, it's time to extend the environment beyond a simple b
     - **Static Obstacles**: Add interior walls or "bumpers" (static Pymunk circles or polygons) that balls can bounce off of to disrupt trajectories.
     - **Kinematic Hazards**: Introduce slowly spinning kinematic platforms in the center of the arena that alter the physics of the battle without taking damage.
 ---
-## Phase 4: UI & Polish
+## Phase 5: UI & Polish
 
 Make the simulation readable and satisfying to watch.
 
