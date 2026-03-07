@@ -1,18 +1,19 @@
 import pymunk
 
 class Ball:
-    def __init__(self, x, y, space):
+    def __init__(self, x, y, space, name="Ball"):
         mass = 10
         radius = 15
         moment = pymunk.moment_for_circle(mass, 0, radius)
         self.body = pymunk.Body(mass, moment)
         self.body.position = (x, y)
         self.shape = pymunk.Circle(self.body, radius)
-        self.shape.elasticity = 0.9
+        self.shape.elasticity = 0.999999999999
         self.shape.friction = 0.5
         self.shape.collision_type = 1
         self.shape.ball = self
         space.add(self.body, self.shape)
+        self.name = name
 
         # Stats
         self.max_hp = 100

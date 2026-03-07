@@ -52,7 +52,6 @@ This is where the "auto-battler" strategy shines. Each class gets a unique comba
 | **Berserker** | **Axe** (Slow cooldown, high base dmg)   | Gains +2 **Attack** per hit. Snowballs into a glass cannon the longer it fights.     |
 | **Paladin**   | **Mace** (Heavy mass, high base def)     | Gains +1 **Defense** per hit. Slowly becomes an unkillable, heavy boulder.           |
 | **Monk**      | **Fists** (Average stats)                | Reduces **Attack Speed** cooldown by 5% per hit. Attacks become a rapid-fire flurry. |
-|               |                                          |                                                                                      |
 
 ---
 ## Phase 4: Custom Arenas & Obstacles
@@ -70,3 +69,22 @@ Make the simulation readable and satisfying to watch.
 - **Health Bars**: Use Pygame's drawing functions to render a small green/red rectangle directly above each ball's current (x,y) coordinates.
     - **Visual Feedback**: Briefly flash the ball white when it takes damage, or add a small colored particle effect when a class scales its stat.
     - **Match State**: Add text to display the winner when only one class/team remains, and a keybind to reset the arena.
+
+---
+## Phase 7: Refactoring and Testing
+
+Refactor the code to clean everything up. Add tests to ensure features are built correctly.
+
+- Extensible
+- Clean Code
+- Modular
+- Pytest
+    - Layer A: Logic & Physics (Headless): This is where you test Pymunk. You don’t need a Pygame window to open for this.
+        - What to test: Does a ball fall at the correct rate? Do two objects trigger a collision callback?
+        - How: Create a Pymunk Space, add bodies, and call space.step(dt) manually in your test. Assert that the body.position is what you expect.
+    - Layer B: Input & Events
+        - What to test: Does pressing 'Space' apply an impulse to the player character?
+        - How: Use pygame.event.post() to inject a fake keyboard event into the queue, then run one frame of your update logic and check the physics body's velocity.
+    - Layer C: Rendering (Visual Regression)
+        - What to test: Is the player sprite actually being drawn at the physics body's coordinates?
+        - How: You can use "Snapshot Testing." Save a "golden" image of a frame and compare the pixel data of your current Surface against it using pygame.image.tostring().
