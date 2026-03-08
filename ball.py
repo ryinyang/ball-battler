@@ -1,6 +1,5 @@
 import math
 import pymunk
-
 import config
 
 class Ball:
@@ -114,3 +113,42 @@ class Berserker(Ball):
     def on_hit(self, target):
         # Berserker Mechanic: Heal slightly on hit
         self.hp = min(self.max_hp, self.hp + 5)
+
+class Paladin(Ball):
+    def __init__(self, x, y, space, name="Paladin"):
+        super().__init__(x, y, space, name, color=config.COLOR_PALADIN)
+        self.max_hp = config.PALADIN_HP
+        self.hp = self.max_hp
+        self.attack = config.PALADIN_ATTACK
+        self.defense = config.PALADIN_DEFENSE
+        self.rotation_speed = config.PALADIN_ROTATION_SPEED
+
+    def _setup_weapon(self, space):
+        # Hammer: Thick and heavy
+        w, l, r = config.PALADIN_WEAPON_DIMS
+        self.weapon_base_vertices = [(r, -w/2), (r+l, -w/2), (r+l, w/2), (r, w/2)]
+        self._create_weapon_shape(space)
+
+    def on_hit(self, target):
+        # Paladin Mechanic: Fortify Defense on hit
+        self.defense += 1
+
+class Monk(Ball):
+    def __init__(self, x, y, space, name="Monk"):
+        super().__init__(x, y, space, name, color=config.COLOR_MONK)
+        self.hp = config.MONK_HP
+        self.attack = config.MONK_ATTACK
+        self.defense = config.MONK_DEFENSE
+        self.attack_speed = config.MONK_ATTACK_SPEED
+        self.speed = config.MONK_SPEED
+        self.rotation_speed = config.MONK_ROTATION_SPEED
+
+    def _setup_weapon(self, space):
+        # Fist: A simple square/box
+        w, l, r = config.MONK_WEAPON_DIMS
+        self.weapon_base_vertices = [(r, -w/2), (r+l, -w/2), (r+l, w/2), (r, w/2)]
+        self._create_weapon_shape(space)
+
+    def on_hit(self, target):
+        # Monk Mechanic: Combo momentum (increase rotation speed temporarily)
+        self.rotation_speed *= 1.1

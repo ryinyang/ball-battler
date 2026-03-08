@@ -112,9 +112,17 @@ Each class will now define the _dimensions_ of its sensor and the _speed_ of its
 |---|---|---|
 |Rogue|Thin & Short (Dagger)|High RPM; resets angle slightly on hit.|
 |Berserker|Wide & Long (Axe)|Slow RPM; heavy visual trail.|
-|Paladin|Thick & Medium (Mace)|Consistent, steady sweep; high "Defense" stat.|
 |Monk|Two small Squares (Fists)|Rapid 180-degree alternating strikes.|
-## Phase 6: Custom Arenas & Obstacles
+|Ranger|Shoots arrows out of a bow|High RPM|
+
+## Phase 6: Combat Tweaks
+
+- Bullet Time: When a weapon connects with a victim ball, temporarily slow down time to emphasize the hit.
+    - Visually highlight which balls are in bullet time
+- Counter Rotation: When a weapon connects with a victim ball, reverse the direction of the weapon's rotation.
+
+---
+## Phase 7: Custom Arenas & Obstacles
 
 Once combat is functional, it's time to extend the environment beyond a simple box to create tactical depth.
 
@@ -122,19 +130,19 @@ Once combat is functional, it's time to extend the environment beyond a simple b
     - Static Obstacles: Add interior walls or "bumpers" (static Pymunk circles or polygons) that balls can bounce off of to disrupt trajectories.
     - Kinematic Hazards: Introduce slowly spinning kinematic platforms in the center of the arena that alter the physics of the battle without taking damage.
 ---
-## Phase 7: UI & Polish
+## Phase 8: UI & Polish
 
 Make the simulation readable and satisfying to watch.
 
-- Health Bars: Use Pygame's drawing functions to render a small green/red rectangle directly above each ball's current (x,y) coordinates.
-    - Visual Feedback: Briefly flash the ball white when it takes damage, or add a small colored particle effect when a class scales its stat.
-    - Match State: Add text to display the winner when only one class/team remains, and a keybind to reset the arena.
-- Bullet Time: When a weapon connects with a target ball, temporarily slow down time to emphasize the hit.
+- Add unique scaling for each class type.
+- Health Display on Balls: Show the current HP on the ball itself as well
+- Visual Feedback: Briefly flash the ball white when it takes damage, or add a small colored particle effect when a class scales its stat.
+- Match State: Add text to display the winner when only one class/team remains, and a keybind to reset the arena.
 - Customizeable Frame Rate
 - Rubber Band Walls: Upgrade the UI to make the arena look like the walls are rubberbanding the balls back into the main play field. Field should flex and bend, then launch the ball towards the enemy.
 
 ---
-## Phase 8: Refactoring and Testing and Bug Fixes
+## Phase 9: Refactoring and Testing and Bug Fixes
 
 Refactor the code to clean everything up. Add tests to ensure features are built correctly.
 

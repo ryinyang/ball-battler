@@ -1,6 +1,6 @@
 import pygame
 import pymunk
-from ball import Rogue, Berserker
+from ball import Rogue, Berserker, Paladin, Monk
 from arena import Arena
 import config
 
@@ -13,6 +13,8 @@ class Game:
         self.clock = pygame.time.Clock()
         self.font = pygame.font.SysFont(None, 36)
         self.running = True
+        self.bullet_time_timer = 0.0
+        self.bullet_time_balls = []
 
         # Physics Setup
         self.space = pymunk.Space()
@@ -27,14 +29,22 @@ class Game:
         self._spawn_balls()
 
     def _spawn_balls(self):
-        # Using the new subclasses
-        b1 = Rogue(self.WIDTH // 4, self.HEIGHT // 2, self.space, "Rogue")
-        b1.body.velocity = (400, -200)
+        # Spawn 4 classes in corners
+        offset = 150
         
-        b2 = Berserker(3 * self.WIDTH // 4, self.HEIGHT // 2, self.space, "Berserker")
-        b2.body.velocity = (-400, -200)
+        b1 = Rogue(offset, offset, self.space, "Rogue")
+        b1.body.velocity = (200, 200)
         
-        self.balls = [b1, b2]
+        b2 = Berserker(self.WIDTH - offset, offset, self.space, "Berserker")
+        b2.body.velocity = (-200, 200)
+
+        b3 = Paladin(offset, self.HEIGHT - offset, self.space, "Paladin")
+        b3.body.velocity = (200, -200)
+
+        b4 = Monk(self.WIDTH - offset, self.HEIGHT - offset, self.space, "Monk")
+        b4.body.velocity = (-200, -200)
+        
+        self.balls = [b1, b2, b3, b4]
 
     def handle_weapon_hit(self, arbiter, space, data):
         victim_shape, weapon_shape = arbiter.shapes
@@ -55,8 +65,11 @@ class Game:
             attacker.flash_timer = config.BALL_FLASH_DURATION
 
             # Visual Knockback
-            impulse_vec = (victim.body.position - attacker.body.position).normalized() * config.KNOCKBACK_IMPULSE
-            victim.body.apply_impulse_at_local_point(impulse_vec)
+            direction = (victim.body.position - attacker.body.position).normalized()
+            victim.body.apply_impulse_at_local_point(direction * config.KNOCKBACK_IMPULSE)
+            attacker.body.apply_impulse_at_local_point(-direction * config.RECOIL_IMPULSE)
+            self.bullet_time_timer = config.BULLET_TIME_DURATION
+            self.bullet_time_balls = [attacker, victim]
 
         return False
 
@@ -94,7 +107,12 @@ class Game:
 
     def update(self):
         self.apply_attraction()
+        
         dt = config.DT
+        if self.bullet_time_timer > 0:
+            dt *= config.BULLET_TIME_SCALE
+            self.bullet_time_timer -= config.DT
+            
         for ball in self.balls: ball.update(dt)
         self.space.step(dt)
         self._check_deaths()
@@ -108,6 +126,20 @@ class Game:
 
     def draw(self):
         self.screen.fill(config.COLOR_BG)
+        
+        # Draw Bullet Time Highlights
+        if self.bullet_time_timer > 0:
+            for ball in self.bullet_time_balls:
+                if ball in self.balls:
+                    pos = int(ball.body.position.x), int(ball.body.position.y)
+                    
+                    halo_radius = int(ball.shape.radius) + 20
+                    halo_surf = pygame.Surface((halo_radius * 2, halo_radius * 2), pygame.SRCALPHA)
+                    for r in range(halo_radius, int(ball.shape.radius), -2):
+                        
+                        pygame.draw.circle(halo_surf, (*config.COLOR_HIGHLIGHT, config.HALO_OPACITY), (halo_radius, halo_radius), r)
+                    self.screen.blit(halo_surf, (pos[0] - halo_radius, pos[1] - halo_radius))
+
         # Draw Walls
         for shape in self.space.shapes:
             if isinstance(shape, pymunk.Segment):
