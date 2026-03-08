@@ -20,13 +20,39 @@ def handle_collision(arbiter, space, data):
     ball_a.body.velocity *= 1.01
     ball_b.body.velocity *= 1.01
 
+def handle_weapon_hit(arbiter, space, data):
+    # Collision Type 1: Ball (Victim)
+    # Collision Type 2: Weapon (Attacker)
+    victim_shape, weapon_shape = arbiter.shapes
+    victim = victim_shape.ball
+    attacker = weapon_shape.ball
+
+    if victim == attacker:
+        return False
+
+    if attacker.cooldown <= 0:
+        attacker.cooldown = attacker.attack_speed
+        
+        dmg = max(1, attacker.attack - victim.defense)
+        victim.hp -= dmg
+        print(f"Weapon Hit! {attacker.name} struck {victim.name} for {dmg} damage.")
+        
+        attacker.on_hit(victim)
+        attacker.flash_timer = 0.1  # Flash for ~0.1 seconds
+
+        # Visual-Only Knockback
+        impulse_vec = (victim.body.position - attacker.body.position).normalized() * 500
+        victim.body.apply_impulse_at_local_point(impulse_vec)
+
+    return False
+
 def main():
     # Initialize Pygame
     pygame.init()
     
     WIDTH, HEIGHT = 800, 600
     screen = pygame.display.set_mode((WIDTH, HEIGHT))
-    pygame.display.set_caption("Ball Battler - Phase 2")
+    pygame.display.set_caption("Ball Battler - Phase 3")
     clock = pygame.time.Clock()
     font = pygame.font.SysFont(None, 36)
 
@@ -35,7 +61,8 @@ def main():
     space.gravity = (0, 400)  # Gravity pointing down
 
     # Collision Handler
-    space.on_collision(1, 1, begin=handle_collision)
+    # space.on_collision(1, 1, begin=handle_collision)
+    space.on_collision(1, 2, begin=handle_weapon_hit)
 
     # Create Arena Walls
     # 4 segments: Top, Bottom, Left, Right
@@ -88,6 +115,10 @@ def main():
 
         # Physics step
         dt = 1.0 / 60.0
+        
+        for ball in balls:
+            ball.update(dt)
+            
         space.step(dt)
 
         # Death Loop
@@ -111,6 +142,18 @@ def main():
         for ball in balls:
             pos = int(ball.body.position.x), int(ball.body.position.y)
             pygame.draw.circle(screen, (255, 0, 0), pos, int(ball.shape.radius))
+
+            # Draw Weapon
+            # Transform local vertices to world space
+            local_verts = ball.weapon_shape.get_vertices()
+            world_verts = []
+            for v in local_verts:
+                p = ball.body.position + v.rotated(ball.body.angle)
+                world_verts.append((int(p.x), int(p.y)))
+            
+            # Flash white on hit, otherwise default weapon color (Yellow for now)
+            weapon_color = (255, 255, 255) if ball.flash_timer > 0 else (200, 200, 0)
+            pygame.draw.polygon(screen, weapon_color, world_verts)
 
         # Draw UI
         for i, ball in enumerate(balls):

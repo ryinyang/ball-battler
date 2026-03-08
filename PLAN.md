@@ -40,46 +40,57 @@ In this phase, we add some basic UI to keep track of the main stats of each ball
     - Colliding with walls should not reduce the velocity
     - Add an attraction force between balls. As they get closer to each other, they accelerate a towards each other. Ensure this attraction force is much smaller than the gravity force.
 ---
-## Phase 3: Add Weapons & Class Logic
+## Phase 3: The Ghost-Weapon System
 
-In this phase, we transition from simple collisions to "Weapon-to-Body" combat. Each ball becomes a composite object: a core (the Ball) and an orbiting limb (the Weapon).
+The goal of this phase is to attach a rotating weapon to each ball that detects hits but exerts zero physical force on the owner while still exerting physical force on the target.
 
-### Phase 3.1: The Physics of Attachment
+### Step 3.1: Defining the Sensor Hitbox
 
-To make weapons feel "connected" but physically reactive, you shouldn't just hard-code their position. Use Pymunk’s constraints.
+Instead of a physical object that bounces, the weapon will be a "Sensor" attached to the Ball’s existing body.
+- The Shape: Add a `pymunk.Poly` (rectangle) to the same `Body` as the Ball.
+- The Sensor Flag: Set `shape_weapon.sensor = True`. This allows the weapon to overlap with other objects without causing a collision response (no bouncing, no friction).
+- Collision Filtering: Assign the weapon a unique `collision_type` (e.g., `2`) so the physics engine can distinguish between a "Body-to-Body" bump and a "Weapon-to-Body" strike.
 
-1. Weapon Initialization:
-    - Create a `Weapon` class that holds a `pymunk.Poly` (the rectangle) and a `pymunk.Body`.
-    - The Pivot: Use a `pymunk.PivotJoint` to anchor the weapon body to the ball body.
-    - The Motor: Use a `pymunk.SimpleMotor` or `pymunk.GearJoint` between the ball and the weapon to keep the weapon spinning at a constant `angular_velocity`.
-2. Collision Filtering:
-    - Assign `collision_type` integers (e.g., BALL=1, WEAPON=2).
-    - Use `shape.filter` to ensure a Ball's weapon passes through its own owner but still hits the enemy Ball and the enemy's Weapon (clashing).
+### Step 3.2: Decoupled Rotation Logic
 
-### Phase 3.2: RPG Classes & Scaling Weapons
+To prevent the weapon from spinning the ball like a top, you will handle the weapon’s rotation independently in the game loop.
+- The Offset Math: Do not rely on the Ball's own rotation (which changes when it hits walls). Instead, maintain a `self.weapon_angle` variable in your Ball class.
+- Manual Update: Every frame, increment `self.weapon_angle` based on the class’s `attack_speed`.
+- Vertex Transformation: Update the weapon shape’s vertices every frame using a rotation matrix so it orbits the center of the ball.
+    
+    x′=xcos(θ)−ysin(θ)
+    y′=xsin(θ)+ycos(θ)
 
-Create a class hierarchy where each subclass defines its own weapon "feel" and its unique `on_hit` stat-scaling logic.
+### Step 3.3: The "Trigger" Callback
 
-|Class|Weapon Physics|Scaling Logic (Triggered On-Hit)|
-|---|---|---|
-|Rogue|Dagger: Short, light-weight rectangle with high motor speed.|`self.speed_limit *= 1.05`. Incremental speed boost makes it harder to hit but more chaotic.|
-|Berserker|Axe: Long, heavy rectangle with high moment of inertia.|`self.attack += 2`. Damage increases linearly; rewards staying alive.|
-|Paladin|Mace: Huge mass, slow rotation, high elasticity.|`self.defense += 1`. Increases the "damage reduction" constant in your Phase 1 formula.|
-|Monk|Fists: Two very small, very fast-rotating shapes.|`self.cooldown_mod *= 0.95`. Decreases the internal timer between allowed damage ticks.|
+Since the weapon is a sensor, it won't "hit" the enemy automatically. You must catch the overlap event.
 
-### Phase 3.3: The "On-Hit" Pipeline
-
-To make the scaling work, you need a clean communication line between Pymunk and your Python classes:
-
-1. Collision Data: Attach the Python object instance to the Pymunk shape using `shape.parent = self`.    
-2. The Callback: In your Pymunk `PostSolve` collision handler:
-    - Identify if a `Weapon` hit a `Ball`.
-    - Retrieve the owner of the weapon.
-    - Call `owner.on_hit(target)` to trigger the class-specific scaling logic (e.g., the Rogue getting faster).
-3. Visual "Oomph": When `on_hit` triggers, change the weapon color briefly to a "glow" state to show the player that a stat-up just occurred.
+- Collision Handler: Register a `begin` callback in Pymunk for `(BALL_TYPE, WEAPON_TYPE)`.
+- The Logic:
+    1. Check if the weapon’s owner is different from the ball being hit.
+    2. Check the attacker's `cooldown`.
+    3. If ready: Apply damage to the target and trigger the attacker's `on_hit()` scaling logic (e.g., Rogue gains +5% speed).
+- Visual-Only Knockback: If you want the hit to _look_ powerful, manually apply a small `impulse` to the target ball only inside this callback. This keeps the attacker’s movement "pure."
 
 ---
-## Phase 4: Custom Arenas & Obstacles
+
+### Step 3.4: Visual Rendering
+
+Since the sensor is invisible in the physics simulation, you must draw it manually in Pygame.
+- Use `pygame.draw.polygon()` using the coordinates calculated in Step 3.2.
+- Polish: Color the weapon based on the class (Rogue = Purple, Berserker = Red) and make it flash white for 2 frames when it successfully triggers a hit.
+---
+## Phase 4: Add RPG Classes
+
+Each class will now define the _dimensions_ of its sensor and the _speed_ of its rotation.
+
+|Class|Sensor Dimensions|Rotation Behavior|
+|---|---|---|
+|Rogue|Thin & Short (Dagger)|High RPM; resets angle slightly on hit.|
+|Berserker|Wide & Long (Axe)|Slow RPM; heavy visual trail.|
+|Paladin|Thick & Medium (Mace)|Consistent, steady sweep; high "Defense" stat.|
+|Monk|Two small Squares (Fists)|Rapid 180-degree alternating strikes.|
+## Phase 5: Custom Arenas & Obstacles
 
 Once combat is functional, it's time to extend the environment beyond a simple box to create tactical depth.
 
@@ -87,7 +98,7 @@ Once combat is functional, it's time to extend the environment beyond a simple b
     - Static Obstacles: Add interior walls or "bumpers" (static Pymunk circles or polygons) that balls can bounce off of to disrupt trajectories.
     - Kinematic Hazards: Introduce slowly spinning kinematic platforms in the center of the arena that alter the physics of the battle without taking damage.
 ---
-## Phase 5: UI & Polish
+## Phase 6: UI & Polish
 
 Make the simulation readable and satisfying to watch.
 
@@ -96,7 +107,7 @@ Make the simulation readable and satisfying to watch.
     - Match State: Add text to display the winner when only one class/team remains, and a keybind to reset the arena.
 
 ---
-## Phase 6: Refactoring and Testing
+## Phase 7: Refactoring and Testing
 
 Refactor the code to clean everything up. Add tests to ensure features are built correctly.
 
