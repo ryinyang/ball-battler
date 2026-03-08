@@ -1,175 +1,146 @@
 import pygame
 import pymunk
-from ball import Ball
+from ball import Rogue, Berserker
+from arena import Arena
+import config
 
-def handle_collision(arbiter, space, data):
-    shape_a, shape_b = arbiter.shapes
-    ball_a = shape_a.ball
-    ball_b = shape_b.ball
-    
-    # Damage Logic: max(1, Attack - Defense)
-    dmg_a = max(1, ball_b.attack - ball_a.defense)
-    dmg_b = max(1, ball_a.attack - ball_b.defense)
-    
-    ball_a.hp -= dmg_a
-    ball_b.hp -= dmg_b
-    
-    print(f"Collision Detected! A: {ball_a.hp} (-{dmg_a}) | B: {ball_b.hp} (-{dmg_b})")
+class Game:
+    def __init__(self):
+        pygame.init()
+        self.WIDTH, self.HEIGHT = config.SCREEN_WIDTH, config.SCREEN_HEIGHT
+        self.screen = pygame.display.set_mode((self.WIDTH, self.HEIGHT))
+        pygame.display.set_caption(config.CAPTION)
+        self.clock = pygame.time.Clock()
+        self.font = pygame.font.SysFont(None, 36)
+        self.running = True
 
-    # Physics Tweak: Add a small velocity boost on collision
-    ball_a.body.velocity *= 1.01
-    ball_b.body.velocity *= 1.01
+        # Physics Setup
+        self.space = pymunk.Space()
+        self.space.gravity = config.GRAVITY
+        
+        # Handlers
+        h_weapon = self.space.on_collision(config.COLLISION_TYPE_BALL, config.COLLISION_TYPE_WEAPON, begin=self.handle_weapon_hit)
 
-def handle_weapon_hit(arbiter, space, data):
-    # Collision Type 1: Ball (Victim)
-    # Collision Type 2: Weapon (Attacker)
-    victim_shape, weapon_shape = arbiter.shapes
-    victim = victim_shape.ball
-    attacker = weapon_shape.ball
+        # Game Objects
+        self.arena = Arena(self.space, self.WIDTH, self.HEIGHT)
+        self.balls = []
+        self._spawn_balls()
 
-    if victim == attacker:
+    def _spawn_balls(self):
+        # Using the new subclasses
+        b1 = Rogue(self.WIDTH // 4, self.HEIGHT // 2, self.space, "Rogue")
+        b1.body.velocity = (400, -200)
+        
+        b2 = Berserker(3 * self.WIDTH // 4, self.HEIGHT // 2, self.space, "Berserker")
+        b2.body.velocity = (-400, -200)
+        
+        self.balls = [b1, b2]
+
+    def handle_weapon_hit(self, arbiter, space, data):
+        victim_shape, weapon_shape = arbiter.shapes
+        victim = victim_shape.ball
+        attacker = weapon_shape.ball
+
+        if victim == attacker:
+            return False
+
+        if attacker.cooldown <= 0:
+            attacker.cooldown = attacker.attack_speed
+            
+            dmg = max(1, attacker.attack - victim.defense)
+            victim.hp -= dmg
+            print(f"{attacker.name} hit {victim.name} for {dmg}!")
+            
+            attacker.on_hit(victim)
+            attacker.flash_timer = config.BALL_FLASH_DURATION
+
+            # Visual Knockback
+            impulse_vec = (victim.body.position - attacker.body.position).normalized() * config.KNOCKBACK_IMPULSE
+            victim.body.apply_impulse_at_local_point(impulse_vec)
+
         return False
 
-    if attacker.cooldown <= 0:
-        attacker.cooldown = attacker.attack_speed
+    def apply_attraction(self):
+        if len(self.balls) < 2: return
         
-        dmg = max(1, attacker.attack - victim.defense)
-        victim.hp -= dmg
-        print(f"Weapon Hit! {attacker.name} struck {victim.name} for {dmg} damage.")
-        
-        attacker.on_hit(victim)
-        attacker.flash_timer = 0.1  # Flash for ~0.1 seconds
+        for i in range(len(self.balls)):
+            for j in range(i + 1, len(self.balls)):
+                ball_a = self.balls[i]
+                ball_b = self.balls[j]
+                
+                p1, p2 = ball_a.body.position, ball_b.body.position
+                direction = p2 - p1
+                dist_sq = direction.length_squared
+                
+                if dist_sq < (ball_a.shape.radius + ball_b.shape.radius)**2:
+                    continue
 
-        # Visual-Only Knockback
-        impulse_vec = (victim.body.position - attacker.body.position).normalized() * 500
-        victim.body.apply_impulse_at_local_point(impulse_vec)
+                force = direction.normalized() * (config.ATTRACTION_FORCE / dist_sq)
+                ball_a.body.apply_force_at_world_point(force, p1)
+                ball_b.body.apply_force_at_world_point(-force, p2)
 
-    return False
+    def run(self):
+        while self.running:
+            self.handle_events()
+            self.update()
+            self.draw()
+            self.clock.tick(config.FPS)
+        pygame.quit()
 
-def main():
-    # Initialize Pygame
-    pygame.init()
-    
-    WIDTH, HEIGHT = 800, 600
-    screen = pygame.display.set_mode((WIDTH, HEIGHT))
-    pygame.display.set_caption("Ball Battler - Phase 3")
-    clock = pygame.time.Clock()
-    font = pygame.font.SysFont(None, 36)
-
-    # Initialize Pymunk Space
-    space = pymunk.Space()
-    space.gravity = (0, 400)  # Gravity pointing down
-
-    # Collision Handler
-    # space.on_collision(1, 1, begin=handle_collision)
-    space.on_collision(1, 2, begin=handle_weapon_hit)
-
-    # Create Arena Walls
-    # 4 segments: Top, Bottom, Left, Right
-    walls = [
-        pymunk.Segment(space.static_body, (0, 0), (WIDTH, 0), 5),
-        pymunk.Segment(space.static_body, (0, HEIGHT), (WIDTH, HEIGHT), 5),
-        pymunk.Segment(space.static_body, (0, 0), (0, HEIGHT), 5),
-        pymunk.Segment(space.static_body, (WIDTH, 0), (WIDTH, HEIGHT), 5)
-    ]
-    
-    for wall in walls:
-        wall.elasticity = 1.0
-        # Physics Tweak: Remove wall friction for more energetic bounces
-        wall.friction = 0.0
-        space.add(wall)
-
-    # Create Balls
-    ball1 = Ball(WIDTH // 4, HEIGHT // 2, space, "Player 1")
-    ball1.body.velocity = (400, -200)
-    ball2 = Ball(3 * WIDTH // 4, HEIGHT // 2, space, "Player 2")
-    ball2.body.velocity = (-400, -200)
-    balls = [ball1, ball2]
-
-    running = True
-    while running:
+    def handle_events(self):
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
-                running = False
+                self.running = False
 
-        # Physics Tweak: Attraction force between balls
-        if len(balls) > 1:
-            for i in range(len(balls)):
-                for j in range(i + 1, len(balls)):
-                    ball_a = balls[i]
-                    ball_b = balls[j]
+    def update(self):
+        self.apply_attraction()
+        dt = config.DT
+        for ball in self.balls: ball.update(dt)
+        self.space.step(dt)
+        self._check_deaths()
 
-                    p1 = ball_a.body.position
-                    p2 = ball_b.body.position
-                    direction = p2 - p1
-                    distance_sq = direction.length_squared
-
-                    # Avoid instability at very close distances
-                    if distance_sq < (ball_a.shape.radius + ball_b.shape.radius)**2:
-                        continue
-
-                    force_magnitude = 2000000.0 / distance_sq
-                    force_vector = direction.normalized() * force_magnitude
-                    ball_a.body.apply_force_at_world_point(force_vector, p1)
-                    ball_b.body.apply_force_at_world_point(-force_vector, p2)
-
-        # Physics step
-        dt = 1.0 / 60.0
-        
-        for ball in balls:
-            ball.update(dt)
-            
-        space.step(dt)
-
-        # Death Loop
-        for ball in balls[:]:
+    def _check_deaths(self):
+        for ball in self.balls[:]:
             if ball.hp <= 0:
-                space.remove(ball.body, ball.shape)
-                balls.remove(ball)
-                print("Ball eliminated!")
+                self.space.remove(ball.body, ball.shape, ball.weapon_shape)
+                self.balls.remove(ball)
+                print(f"{ball.name} eliminated!")
 
-        # Drawing
-        screen.fill((0, 0, 0))
-        
-        # Draw walls
-        for shape in space.shapes:
+    def draw(self):
+        self.screen.fill(config.COLOR_BG)
+        # Draw Walls
+        for shape in self.space.shapes:
             if isinstance(shape, pymunk.Segment):
-                p1 = shape.a
-                p2 = shape.b
-                pygame.draw.line(screen, (200, 200, 200), p1, p2, int(shape.radius * 2))
-
-        # Draw balls
-        for ball in balls:
+                pygame.draw.line(self.screen, config.COLOR_WALL, shape.a, shape.b, int(shape.radius * 2))
+        
+        # Draw Balls
+        for ball in self.balls:
             pos = int(ball.body.position.x), int(ball.body.position.y)
-            pygame.draw.circle(screen, (255, 0, 0), pos, int(ball.shape.radius))
+            pygame.draw.circle(self.screen, ball.color, pos, int(ball.shape.radius))
 
-            # Draw Weapon
-            # Transform local vertices to world space
+            # Draw Weapon (World Space)
             local_verts = ball.weapon_shape.get_vertices()
             world_verts = []
             for v in local_verts:
                 p = ball.body.position + v.rotated(ball.body.angle)
                 world_verts.append((int(p.x), int(p.y)))
             
-            # Flash white on hit, otherwise default weapon color (Yellow for now)
-            weapon_color = (255, 255, 255) if ball.flash_timer > 0 else (200, 200, 0)
-            pygame.draw.polygon(screen, weapon_color, world_verts)
+            weapon_color = config.COLOR_WEAPON_FLASH if ball.flash_timer > 0 else config.COLOR_WEAPON_DEFAULT
+            pygame.draw.polygon(self.screen, weapon_color, world_verts)
 
         # Draw UI
-        for i, ball in enumerate(balls):
+        for i, ball in enumerate(self.balls):
             velocity_magnitude = int(ball.body.velocity.length)
-            text_surf = font.render(f"{ball.name}: HP {int(ball.hp)} | Vel: {velocity_magnitude}", True, (255, 255, 255))
+            text_surf = self.font.render(f"{ball.name}: HP {int(ball.hp)} | Vel: {velocity_magnitude}", True, config.COLOR_TEXT)
             if i % 2 == 0:
-                screen.blit(text_surf, (20, 20 + (i // 2) * 30))
+                self.screen.blit(text_surf, (20, 20 + (i // 2) * 30))
             else:
                 rect = text_surf.get_rect()
-                rect.topright = (WIDTH - 20, 20 + (i // 2) * 30)
-                screen.blit(text_surf, rect)
+                rect.topright = (self.WIDTH - 20, 20 + (i // 2) * 30)
+                self.screen.blit(text_surf, rect)
 
         pygame.display.flip()
-        clock.tick(60)
-
-    pygame.quit()
 
 if __name__ == "__main__":
-    main()
+    game = Game()
+    game.run()

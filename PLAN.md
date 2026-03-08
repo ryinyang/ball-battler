@@ -80,7 +80,31 @@ Since the sensor is invisible in the physics simulation, you must draw it manual
 - Use `pygame.draw.polygon()` using the coordinates calculated in Step 3.2.
 - Polish: Color the weapon based on the class (Rogue = Purple, Berserker = Red) and make it flash white for 2 frames when it successfully triggers a hit.
 ---
-## Phase 4: Add RPG Classes
+
+## Phase 4: Refactor
+
+In this phase, we will refactor our existing codebase so that it is readable, clean, and extensible.
+
+### Recommended Patterns
+
+Inheritance & Polymorphism (The RPG Classes)
+- Why: Phase 4 requires distinct classes (Rogue, Berserker, etc.) with unique weapon shapes, rotation speeds, and on_hit behaviors.
+- How: Refactor Ball into a base class containing the core physics and stat logic. Create subclasses (Rogue, Berserker) that override specific methods like _setup_weapon() and on_hit().
+
+The "Game Director" Pattern (Encapsulation)
+- Why: Currently, main.py relies on global variables and a raw while loop. This makes it difficult to reset the game (Phase 6) or manage complex states.
+- How: Encapsulate the game state (Pymunk space, Pygame screen, entity lists) into a Game class. This class handles initialization, the main loop, and cleanup.
+
+Composition (The Arena)
+- Why: Phase 5 introduces custom arenas and obstacles. Hardcoding segments in main.py is not scalable.
+- How: Create an Arena class responsible for generating walls and static obstacles. The Game class simply asks the Arena to "build" itself into the space.
+
+Separation of Physics & Logic
+- Why: Collision handlers currently mix logging, damage calculation, and physics impulses.
+- How: Keep collision callbacks focused. They should identify the entities involved and delegate the gameplay logic (damage, effects) to the entities themselves (e.g., attacker.deal_damage(victim)).
+
+---
+## Phase 5: Add RPG Classes
 
 Each class will now define the _dimensions_ of its sensor and the _speed_ of its rotation.
 
@@ -90,7 +114,7 @@ Each class will now define the _dimensions_ of its sensor and the _speed_ of its
 |Berserker|Wide & Long (Axe)|Slow RPM; heavy visual trail.|
 |Paladin|Thick & Medium (Mace)|Consistent, steady sweep; high "Defense" stat.|
 |Monk|Two small Squares (Fists)|Rapid 180-degree alternating strikes.|
-## Phase 5: Custom Arenas & Obstacles
+## Phase 6: Custom Arenas & Obstacles
 
 Once combat is functional, it's time to extend the environment beyond a simple box to create tactical depth.
 
@@ -98,16 +122,19 @@ Once combat is functional, it's time to extend the environment beyond a simple b
     - Static Obstacles: Add interior walls or "bumpers" (static Pymunk circles or polygons) that balls can bounce off of to disrupt trajectories.
     - Kinematic Hazards: Introduce slowly spinning kinematic platforms in the center of the arena that alter the physics of the battle without taking damage.
 ---
-## Phase 6: UI & Polish
+## Phase 7: UI & Polish
 
 Make the simulation readable and satisfying to watch.
 
 - Health Bars: Use Pygame's drawing functions to render a small green/red rectangle directly above each ball's current (x,y) coordinates.
     - Visual Feedback: Briefly flash the ball white when it takes damage, or add a small colored particle effect when a class scales its stat.
     - Match State: Add text to display the winner when only one class/team remains, and a keybind to reset the arena.
+- Bullet Time: When a weapon connects with a target ball, temporarily slow down time to emphasize the hit.
+- Customizeable Frame Rate
+- Rubber Band Walls: Upgrade the UI to make the arena look like the walls are rubberbanding the balls back into the main play field. Field should flex and bend, then launch the ball towards the enemy.
 
 ---
-## Phase 7: Refactoring and Testing
+## Phase 8: Refactoring and Testing and Bug Fixes
 
 Refactor the code to clean everything up. Add tests to ensure features are built correctly.
 

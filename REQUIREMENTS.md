@@ -1,0 +1,14 @@
+Requirements
+- Balls
+	- Each ball should have customizable stats like HP, attack, attack speed, defense, speed, gravity, etc.
+	- Each ball belongs to a certain RPG-style class, which gives it a unique type of weapon (like dagger or bow) or ability (like scaling attack speed).
+	- Each time a ball hits an enemy with its weapon, it should scale its stats in some way. Ensure that each scaling type is unique to a class and fits its combat style.
+- Arena
+	- The arena is where the balls do combat. It should essentially be a box with collision enabled walls.
+	- Ensure that we can extend the arena to create custom shapes and even include obstacles.
+- Physics
+	- The balls are not controlled by the players. Rather, they are simply moving according to physics.
+- Tech stack
+	- Use Pygame + Pymunk
+	- Use uv, the modern Python manager
+	- Use WSL
