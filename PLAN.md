@@ -23,9 +23,9 @@ The goal of this phase is strictly a "Zero-Player Game" where circles bounce in 
 
 In this phase, we move from "bouncing balls" to "battling balls" by introducing stats and hit registration.
 
-- Stat Component: Expand the `Ball` class with attributes: `hp`, `max_hp`, `attack`, `defense`, `attack_speed` (which will act as a cooldown timer between hits), and `speed` (to apply periodic impulses so they keep moving).
+- Stat Component: Expand the `Ball` class with attributes: `hp`, `max_hp`, `attack`, `defense`, `attack_speed`, and `speed` (to apply periodic impulses so they keep moving).
     - Collision Callbacks: Use Pymunk’s `CollisionHandler` to trigger logic when two ball shapes overlap.
-    - Damage Logic: When a valid collision occurs (and attack cooldown is 0), calculate damage. A standard formula works well here:
+    - Damage Logic: When a valid collision occurs, calculate damage. A standard formula works well here:
         Damage=max(1,Attackeratk​−Defenderdef​)
     - Death Loop: If a ball's `hp` drops to 0 or below, safely remove its body and shape from the Pymunk space and its instance from the Pygame render list.
 ---
@@ -68,8 +68,7 @@ Since the weapon is a sensor, it won't "hit" the enemy automatically. You must c
 - Collision Handler: Register a `begin` callback in Pymunk for `(BALL_TYPE, WEAPON_TYPE)`.
 - The Logic:
     1. Check if the weapon’s owner is different from the ball being hit.
-    2. Check the attacker's `cooldown`.
-    3. If ready: Apply damage to the target and trigger the attacker's `on_hit()` scaling logic (e.g., Rogue gains +5% speed).
+    2. If ready: Apply damage to the target and trigger the attacker's `on_hit()` scaling logic (e.g., Rogue gains +5% speed).
 - Visual-Only Knockback: If you want the hit to _look_ powerful, manually apply a small `impulse` to the target ball only inside this callback. This keeps the attacker’s movement "pure."
 
 ---
@@ -120,6 +119,7 @@ Each class will now define the _dimensions_ of its sensor and the _speed_ of its
 - Bullet Time: When a weapon connects with a victim ball, temporarily slow down time to emphasize the hit.
     - Visually highlight which balls are in bullet time
 - Counter Rotation: When a weapon connects with a victim ball, reverse the direction of the weapon's rotation.
+- Weapon collisions: When a weapon connects with another weapon, deal no damage, reverse weapon rotation, and apply knockback impulse
 
 ---
 ## Phase 7: Custom Arenas & Obstacles
@@ -140,6 +140,12 @@ Make the simulation readable and satisfying to watch.
 - Match State: Add text to display the winner when only one class/team remains, and a keybind to reset the arena.
 - Customizeable Frame Rate
 - Rubber Band Walls: Upgrade the UI to make the arena look like the walls are rubberbanding the balls back into the main play field. Field should flex and bend, then launch the ball towards the enemy.
+- Post Battle Screen (Metrics):
+    - Who won?
+    - How much damage did each ball do?
+    - What was the average speed of each ball?
+    - Superlatives
+        - Most damage, highest speed, most hits
 
 ---
 ## Phase 9: Refactoring and Testing and Bug Fixes

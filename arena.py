@@ -22,5 +22,6 @@ class Arena:
             wall = pymunk.Segment(self.space.static_body, p1, p2, config.WALL_THICKNESS)
             wall.elasticity = config.WALL_ELASTICITY
             wall.friction = config.WALL_FRICTION
+            wall.filter = pymunk.ShapeFilter(categories=config.CATEGORY_WALL)
             self.space.add(wall)
             self.walls.append(wall)

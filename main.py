@@ -22,6 +22,7 @@ class Game:
         
         # Handlers
         h_weapon = self.space.on_collision(config.COLLISION_TYPE_BALL, config.COLLISION_TYPE_WEAPON, begin=self.handle_weapon_hit)
+        h_clash = self.space.on_collision(config.COLLISION_TYPE_WEAPON, config.COLLISION_TYPE_WEAPON, begin=self.handle_weapon_clash)
 
         # Game Objects
         self.arena = Arena(self.space, self.WIDTH, self.HEIGHT)
@@ -54,24 +55,43 @@ class Game:
         if victim == attacker:
             return False
 
-        if attacker.cooldown <= 0:
-            attacker.cooldown = attacker.attack_speed
-            
-            dmg = max(1, attacker.attack - victim.defense)
-            victim.hp -= dmg
-            print(f"{attacker.name} hit {victim.name} for {dmg}!")
-            
-            attacker.on_hit(victim)
-            attacker.flash_timer = config.BALL_FLASH_DURATION
+        dmg = max(1, attacker.attack - victim.defense)
+        victim.hp -= dmg
+        print(f"{attacker.name} hit {victim.name} for {dmg}!")
+        
+        attacker.on_hit(victim)
+        attacker.flash_timer = config.BALL_FLASH_DURATION
 
-            # Visual Knockback
-            direction = (victim.body.position - attacker.body.position).normalized()
-            victim.body.apply_impulse_at_local_point(direction * config.KNOCKBACK_IMPULSE)
-            attacker.body.apply_impulse_at_local_point(-direction * config.RECOIL_IMPULSE)
-            self.bullet_time_timer = config.BULLET_TIME_DURATION
-            self.bullet_time_balls = [attacker, victim]
+        # Visual Knockback
+        direction = (victim.body.position - attacker.body.position).normalized()
+        victim.body.apply_impulse_at_local_point(direction * config.KNOCKBACK_IMPULSE)
+        attacker.body.apply_impulse_at_local_point(-direction * config.RECOIL_IMPULSE)
+        self.bullet_time_timer = config.BULLET_TIME_DURATION
+        self.bullet_time_balls = [attacker, victim]
+        attacker.rotation_speed *= -1
 
-        return False
+        return True
+
+    def handle_weapon_clash(self, arbiter, space, data):
+        shape_a, shape_b = arbiter.shapes
+        ball_a = shape_a.ball
+        ball_b = shape_b.ball
+
+        if ball_a == ball_b:
+            return False
+
+        # Reverse rotation
+        ball_a.rotation_speed *= -1
+        ball_b.rotation_speed *= -1
+
+        # Knockback
+        diff = ball_b.body.position - ball_a.body.position
+        if diff.length_squared > 0:
+            direction = diff.normalized()
+            ball_a.body.apply_impulse_at_local_point(-direction * config.WEAPON_CLASH_IMPULSE)
+            ball_b.body.apply_impulse_at_local_point(direction * config.WEAPON_CLASH_IMPULSE)
+
+        return True
 
     def apply_attraction(self):
         if len(self.balls) < 2: return
@@ -120,7 +140,7 @@ class Game:
     def _check_deaths(self):
         for ball in self.balls[:]:
             if ball.hp <= 0:
-                self.space.remove(ball.body, ball.shape, ball.weapon_shape)
+                self.space.remove(ball.body, ball.shape, *ball.weapon_shapes)
                 self.balls.remove(ball)
                 print(f"{ball.name} eliminated!")
 
@@ -151,14 +171,15 @@ class Game:
             pygame.draw.circle(self.screen, ball.color, pos, int(ball.shape.radius))
 
             # Draw Weapon (World Space)
-            local_verts = ball.weapon_shape.get_vertices()
-            world_verts = []
-            for v in local_verts:
-                p = ball.body.position + v.rotated(ball.body.angle)
-                world_verts.append((int(p.x), int(p.y)))
-            
-            weapon_color = config.COLOR_WEAPON_FLASH if ball.flash_timer > 0 else config.COLOR_WEAPON_DEFAULT
-            pygame.draw.polygon(self.screen, weapon_color, world_verts)
+            for shape in ball.weapon_shapes:
+                local_verts = shape.get_vertices()
+                world_verts = []
+                for v in local_verts:
+                    p = ball.body.position + v.rotated(ball.body.angle)
+                    world_verts.append((int(p.x), int(p.y)))
+                
+                weapon_color = config.COLOR_WEAPON_FLASH if ball.flash_timer > 0 else config.COLOR_WEAPON_DEFAULT
+                pygame.draw.polygon(self.screen, weapon_color, world_verts)
 
         # Draw UI
         for i, ball in enumerate(self.balls):
