@@ -79,7 +79,6 @@ Since the sensor is invisible in the physics simulation, you must draw it manual
 - Use `pygame.draw.polygon()` using the coordinates calculated in Step 3.2.
 - Polish: Color the weapon based on the class (Rogue = Purple, Berserker = Red) and make it flash white for 2 frames when it successfully triggers a hit.
 ---
-
 ## Phase 4: Refactor
 
 In this phase, we will refactor our existing codebase so that it is readable, clean, and extensible.
@@ -129,6 +128,12 @@ Once combat is functional, it's time to extend the environment beyond a simple b
 - Arena Factory: Create an `Arena` class that accepts a list of coordinates to draw complex boundary polygons instead of just a rectangle.
     - Static Obstacles: Add interior walls or "bumpers" (static Pymunk circles or polygons) that balls can bounce off of to disrupt trajectories.
     - Kinematic Hazards: Introduce slowly spinning kinematic platforms in the center of the arena that alter the physics of the battle without taking damage.
+    - Temporary Buffs: Periodically add items which buff the balls
+    - Healing Items: Heal damaged HP
+
+- New Arena: The Octagon
+    - This arena is a standard 8 sided octagon
+    - The bottom wall will be extra bouncy, causing balls to rapidly increase velocity
 ---
 ## Phase 8: UI & Polish
 
@@ -147,8 +152,21 @@ Make the simulation readable and satisfying to watch.
     - Superlatives
         - Most damage, highest speed, most hits
 
+## Phase 9: Machine Learning
+
+In this phase, we add Machine Learning techniques to play around with the classes, their stats, and balance.
+
+- Refactor so that we can tweak all aspects of config, including:
+    - Ball stats
+    - Physics
+    - Battle configurations (number of balls, which ball types)
+- Refactor so that we can run the simulation in 2 modes:
+    - Normal mode: allow user to view the battles as normal
+    - Instant mode: don't render anything to the user, just simulate the battle internally and return the results
+- Add libs (research which makes the most sense for our usecase)
+
 ---
-## Phase 9: Refactoring and Testing and Bug Fixes
+## Phase x: Refactoring and Testing and Bug Fixes
 
 Refactor the code to clean everything up. Add tests to ensure features are built correctly.
 

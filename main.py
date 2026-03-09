@@ -93,6 +93,31 @@ class Game:
 
         return True
 
+    def check_proximity_bullet_time(self):
+        # If a hit event is currently active (long timer), don't interfere
+        if self.bullet_time_timer > config.DT * 3:
+            return
+
+        triggered = False
+        close_balls = set()
+        threshold_sq = config.BULLET_TIME_TRIGGER_DISTANCE ** 2
+
+        for i in range(len(self.balls)):
+            for j in range(i + 1, len(self.balls)):
+                ball_a = self.balls[i]
+                ball_b = self.balls[j]
+                
+                dist_sq = (ball_a.body.position - ball_b.body.position).length_squared
+                
+                if dist_sq < threshold_sq:
+                    triggered = True
+                    close_balls.add(ball_a)
+                    close_balls.add(ball_b)
+        
+        if triggered:
+            self.bullet_time_timer = config.DT * 2
+            self.bullet_time_balls = list(close_balls)
+
     def apply_attraction(self):
         if len(self.balls) < 2: return
         
@@ -127,6 +152,7 @@ class Game:
 
     def update(self):
         self.apply_attraction()
+        self.check_proximity_bullet_time()
         
         dt = config.DT
         if self.bullet_time_timer > 0:
@@ -153,7 +179,7 @@ class Game:
                 if ball in self.balls:
                     pos = int(ball.body.position.x), int(ball.body.position.y)
                     
-                    halo_radius = int(ball.shape.radius) + 20
+                    halo_radius = int(ball.shape.radius) + 40
                     halo_surf = pygame.Surface((halo_radius * 2, halo_radius * 2), pygame.SRCALPHA)
                     for r in range(halo_radius, int(ball.shape.radius), -2):
                         
