@@ -1,7 +1,7 @@
 import pygame
 import pymunk
 from ball import Rogue, Berserker, Paladin, Monk
-from arena import Arena
+from arena import OctagonArena
 import config
 
 class Game:
@@ -25,7 +25,7 @@ class Game:
         h_clash = self.space.on_collision(config.COLLISION_TYPE_WEAPON, config.COLLISION_TYPE_WEAPON, begin=self.handle_weapon_clash)
 
         # Game Objects
-        self.arena = Arena(self.space, self.WIDTH, self.HEIGHT)
+        self.arena = OctagonArena(self.space, self.WIDTH, self.HEIGHT)
         self.balls = []
         self._spawn_balls()
 

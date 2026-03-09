@@ -2,25 +2,65 @@ import pymunk
 import config
 
 class Arena:
-    def __init__(self, space, width, height):
+    def __init__(self, space, width=None, height=None, vertices=None):
         self.space = space
-        self.width = width
-        self.height = height
         self.walls = []
+        
+        if vertices:
+            self.vertices = vertices
+        elif width is not None and height is not None:
+            self.vertices = [
+                (0, 0),
+                (width, 0),
+                (width, height),
+                (0, height)
+            ]
+        else:
+            raise ValueError("Arena requires either vertices or width/height")
+
         self._build_walls()
 
     def _build_walls(self):
-        # 4 segments: Top, Bottom, Left, Right
-        segments = [
-            ((0, 0), (self.width, 0)),
-            ((0, self.height), (self.width, self.height)),
-            ((0, 0), (0, self.height)),
-            ((self.width, 0), (self.width, self.height))
-        ]
-
-        for p1, p2 in segments:
+        for i in range(len(self.vertices)):
+            p1 = self.vertices[i]
+            p2 = self.vertices[(i + 1) % len(self.vertices)]
+            
             wall = pymunk.Segment(self.space.static_body, p1, p2, config.WALL_THICKNESS)
             wall.elasticity = config.WALL_ELASTICITY
+            wall.friction = config.WALL_FRICTION
+            wall.filter = pymunk.ShapeFilter(categories=config.CATEGORY_WALL)
+            self.space.add(wall)
+            self.walls.append(wall)
+
+class OctagonArena(Arena):
+    def __init__(self, space, width, height, corner_cut=150):
+        vertices = [
+            (0, corner_cut),              # Left-Top
+            (corner_cut, 0),              # Top-Left
+            (width - corner_cut, 0),      # Top-Right
+            (width, corner_cut),          # Right-Top
+            (width, height - corner_cut), # Right-Bottom
+            (width - corner_cut, height), # Bottom-Right
+            (corner_cut, height),         # Bottom-Left
+            (0, height - corner_cut)      # Left-Bottom
+        ]
+        super().__init__(space, vertices=vertices)
+
+    def _build_walls(self):
+        max_y = max(v[1] for v in self.vertices)
+
+        for i in range(len(self.vertices)):
+            p1 = self.vertices[i]
+            p2 = self.vertices[(i + 1) % len(self.vertices)]
+            
+            wall = pymunk.Segment(self.space.static_body, p1, p2, config.WALL_THICKNESS)
+            
+            # Make the bottom wall extra bouncy
+            if p1[1] == max_y and p2[1] == max_y:
+                wall.elasticity = config.WALL_BOUNCY_ELASTICITY
+            else:
+                wall.elasticity = config.WALL_ELASTICITY
+            
             wall.friction = config.WALL_FRICTION
             wall.filter = pymunk.ShapeFilter(categories=config.CATEGORY_WALL)
             self.space.add(wall)

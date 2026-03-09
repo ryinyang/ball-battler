@@ -112,7 +112,7 @@ Each class will now define the _dimensions_ of its sensor and the _speed_ of its
 |Berserker|Wide & Long (Axe)|Slow RPM; heavy visual trail.|
 |Monk|Two small Squares (Fists)|Rapid 180-degree alternating strikes.|
 |Ranger|Shoots arrows out of a bow|High RPM|
-
+---
 ## Phase 6: Combat Tweaks
 
 - Bullet Time: When a weapon connects with a victim ball, temporarily slow down time to emphasize the hit.
@@ -125,15 +125,21 @@ Each class will now define the _dimensions_ of its sensor and the _speed_ of its
 
 Once combat is functional, it's time to extend the environment beyond a simple box to create tactical depth.
 
+Arena Refactor
 - Arena Factory: Create an `Arena` class that accepts a list of coordinates to draw complex boundary polygons instead of just a rectangle.
-    - Static Obstacles: Add interior walls or "bumpers" (static Pymunk circles or polygons) that balls can bounce off of to disrupt trajectories.
-    - Kinematic Hazards: Introduce slowly spinning kinematic platforms in the center of the arena that alter the physics of the battle without taking damage.
-    - Temporary Buffs: Periodically add items which buff the balls
-    - Healing Items: Heal damaged HP
-
 - New Arena: The Octagon
     - This arena is a standard 8 sided octagon
     - The bottom wall will be extra bouncy, causing balls to rapidly increase velocity
+
+Obstacles, buffs, items, etc.
+- Static Obstacles: Add interior walls or "bumpers" (static Pymunk circles or polygons) that balls can bounce off of to disrupt trajectories.
+- Kinematic Hazards: Introduce slowly spinning kinematic platforms in the center of the arena that alter the physics of the battle without taking damage.
+- Temporary Buffs: Periodically add items which buff the balls
+- Healing Items: Heal damaged HP
+- Black hole: A temporary, strong attraction force that pulls all balls towards it. Manifests as a black hole that draws a circle in the middle of the arena. After slowly walking the circular path, it disappears, allowing balls to resume their original trajectories.
+
+Minor Improvements:
+- Remove Defense as a stat.
 ---
 ## Phase 8: UI & Polish
 
@@ -173,6 +179,8 @@ Refactor the code to clean everything up. Add tests to ensure features are built
 - Extensible
 - Clean Code
 - Modular
+- main.py
+    - Separate physics, drawing, and logic
 - Pytest
     - Layer A: Logic & Physics (Headless): This is where you test Pymunk. You don’t need a Pygame window to open for this.
         - What to test: Does a ball fall at the correct rate? Do two objects trigger a collision callback?

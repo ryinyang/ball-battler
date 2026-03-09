@@ -57,6 +57,10 @@ class Ball:
             self.weapon_shapes.append(shape)
 
     def update(self, dt):
+        # Clamp velocity to prevent tunneling
+        if self.body.velocity.length > config.BALL_MAX_SPEED:
+            self.body.velocity = self.body.velocity.normalized() * config.BALL_MAX_SPEED
+
         if self.flash_timer > 0:
             self.flash_timer -= dt
 
