@@ -3,7 +3,7 @@ import pygame
 import pymunk
 from ball import Rogue, Berserker, Paladin, Monk
 from arena import OctagonArena
-from item import Item, HealingItem
+from item import Item, Potion
 import config
 
 class Game:
@@ -63,7 +63,7 @@ class Game:
         x = random.uniform(padding, self.WIDTH - padding)
         y = random.uniform(padding, self.HEIGHT - padding)
         
-        new_item = HealingItem(self.space, x, y)
+        new_item = Potion(self.space, x, y)
         self.items.append(new_item)
 
     def handle_weapon_hit(self, arbiter, space, data):

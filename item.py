@@ -32,7 +32,7 @@ class Item:
         """Safely remove the item from the space."""
         self.space.remove(self.body, self.shape)
 
-class HealingItem(Item):
+class Potion(Item):
     def __init__(self, space, x, y):
         super().__init__(space, x, y)
         self.color = config.COLOR_ITEM_HEAL
