@@ -125,10 +125,11 @@ Once combat is functional, it's time to extend the environment beyond a simple b
 	    - The bottom wall will be extra bouncy, causing balls to rapidly increase velocity
 - Obstacles: Some wall or structure in the Arena that impacts the battle. Usually permanent.
 	- Neutral Obstacles:
-		- [ ] Bumper: When a ball contacts a Bumper, increase the speed of that ball.
+		- [ ] Bumper Obstacle: When a ball contacts a Bumper, increase the speed of that ball.
 	- Hazardous Obstacles:
-		- [ ] Sticker: When a ball contacts a Sticker, make it stick to the wall temporarily, then reduce its velocity.
-		- [ ] Poker: When a ball contacts a Poker, deal damage to that ball
+		- [ ] Sticker Obstacle: When a ball contacts a Sticker, make it stick to the wall temporarily, then reduce its velocity.
+		- [ ] Poker Obstacle: When a ball contacts a Poker, deal damage to that ball
+		- [ ] Slow-Mo-Zone: The first ball to enter this zone slows down to 1% normal speed. Has a cool down until another ball can trigger this effect.
 	- Buffing Obstacles:
 		- [ ] Healer: When a ball contacts a Healer, heal that ball.
 		- [ ] Attack Buff: When a ball contacts a Attack Buff, increase that ball's attack.

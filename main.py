@@ -159,7 +159,7 @@ class Game:
                 self.running = False
 
     def update(self):
-        self.apply_attraction()
+        # self.apply_attraction()
         self.check_proximity_bullet_time()
         
         dt = config.DT

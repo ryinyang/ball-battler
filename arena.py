@@ -16,6 +16,28 @@ class Obstacle:
     def on_collide(self, ball):
         pass
 
+class Bumper(Obstacle):
+    def __init__(self, space, x, y):
+        super().__init__(space, x, y)
+        self.radius = config.BUMPER_RADIUS
+        self.color = config.COLOR_BUMPER
+        
+        self.shape = pymunk.Circle(self.body, self.radius)
+        self.shape.elasticity = config.BUMPER_ELASTICITY
+        self.shape.friction = 0.5
+        self.shape.collision_type = config.COLLISION_TYPE_OBSTACLE
+        self.shape.filter = pymunk.ShapeFilter(categories=config.CATEGORY_OBSTACLE)
+        self.shape.obstacle = self
+        self.space.add(self.body, self.shape)
+
+    def draw(self, screen):
+        pos = int(self.body.position.x), int(self.body.position.y)
+        pygame.draw.circle(screen, self.color, pos, self.radius)
+        pygame.draw.circle(screen, (255, 255, 255), pos, self.radius - 8, 3)
+
+    def on_collide(self, ball):
+        ball.body.velocity = ball.body.velocity * config.BUMPER_SPEED_BOOST
+
 class Arena:
     def __init__(self, space, vertices=None):
         self.space = space
@@ -64,6 +86,12 @@ class OctagonArena(Arena):
             (0, height - corner_cut)      # Left-Bottom
         ]
         super().__init__(space, vertices=vertices)
+        
+        # Bumpers in a + shape
+        self.obstacles.append(Bumper(space, width / 2 - 150, height / 2))
+        self.obstacles.append(Bumper(space, width / 2 + 150, height / 2))
+        self.obstacles.append(Bumper(space, width / 2, height / 2 - 150))
+        self.obstacles.append(Bumper(space, width / 2, height / 2 + 150))
 
     def _build_walls(self):
         max_y = max(v[1] for v in self.vertices)
