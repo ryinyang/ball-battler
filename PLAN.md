@@ -94,7 +94,7 @@ Composition (The Arena)
 
 Separation of Physics & Logic
 - Why: Collision handlers currently mix logging, damage calculation, and physics impulses.
-- How: Keep collision callbacks focused. They should identify the entities involved and delegate the gameplay logic (damage, effects) to the entities themselves (e.g., attacker.deal_damage(victim)).
+- How: Keep collision callbacks focused. They should identify the entities involved and delegate the gameplay logic (damage, effects) to the entities themselves (e.g., attacker.deal_damage(target)).
 
 ## Phase 5: Add RPG Classes
 
@@ -108,9 +108,9 @@ Each class will now define the _dimensions_ of its sensor and the _speed_ of its
 | Ranger    | Shoots arrows out of a bow | High RPM                                |
 ## Phase 6: Combat Tweaks
 
-- Bullet Time: When a weapon connects with a victim ball, temporarily slow down time to emphasize the hit.
+- Bullet Time: When a weapon connects with a target ball, temporarily slow down time to emphasize the hit.
     - Visually highlight which balls are in bullet time
-- Counter Rotation: When a weapon connects with a victim ball, reverse the direction of the weapon's rotation.
+- Counter Rotation: When a weapon connects with a target ball, reverse the direction of the weapon's rotation.
 - Weapon collisions: When a weapon connects with another weapon, deal no damage, reverse weapon rotation, and apply knockback impulse
 
 ## Phase 7: Custom Arenas & Obstacles
@@ -134,12 +134,14 @@ Once combat is functional, it's time to extend the environment beyond a simple b
 	- Buffing Obstacles:
 		- [ ] Attack Buff: When a ball contacts a Attack Buff, increase that ball's attack.
 - Items: A item is something that can give a Ball some benefit. Usually temporary or consumable.
-	- [ ] Healing Ball: A consumable that, when collected by a ball, heals that ball by X HP
+	- [x] Healing Ball: A consumable that, when collected by a ball, heals that ball by X HP
 - Special Environmental Effects: Special effects that Arenas may contain that drastically change the way that the battle is played. Usually unique to an Arena.
-	- [ ] Black hole: A non-solid, temporary, strong attraction force that pulls all balls towards it. Manifests as a black hole that draws a circle in the middle of the arena. After slowly walking the circular path, it disappears, allowing balls to resume their original trajectories.
+	- [x] Black hole: A non-solid, temporary, strong attraction force that pulls all balls towards it. Manifests as a black hole that draws a circle in the middle of the arena. After slowly walking the circular path, it disappears, allowing balls to resume their original trajectories.
 
 Misc Changes:
 - [ ] Remove Defense as a stat. As a viewer, it is difficult to understand defense. To rebalance, add more HP relative to the defense characters had.
+- [ ] Refactor the logic that populates an Arena with Obstacles, Items, and Special Environmental Effects such that the game client can decide at run time which things to add to an Arena. Make it modular and easy to customize.
+- [ ] Refactor Obstacles into a separate file
 ## Phase 8: UI & Polish
 
 Make the simulation readable and satisfying to watch.

@@ -106,10 +106,10 @@ class OctagonArena(Arena):
             wall = pymunk.Segment(self.space.static_body, p1, p2, config.WALL_THICKNESS)
             
             # Make the bottom wall extra bouncy
-            if p1[1] == max_y and p2[1] == max_y:
-                wall.elasticity = config.WALL_BOUNCY_ELASTICITY
-            else:
-                wall.elasticity = config.WALL_ELASTICITY
+            # if p1[1] == max_y and p2[1] == max_y:
+            #     wall.elasticity = config.WALL_BOUNCY_ELASTICITY
+            # else:
+            wall.elasticity = config.WALL_ELASTICITY
             
             wall.friction = config.WALL_FRICTION
             wall.filter = pymunk.ShapeFilter(categories=config.CATEGORY_WALL)

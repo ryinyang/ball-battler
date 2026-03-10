@@ -67,26 +67,26 @@ class Game:
         self.items.append(new_item)
 
     def handle_weapon_hit(self, arbiter, space, data):
-        victim_shape, weapon_shape = arbiter.shapes
-        victim = victim_shape.ball
+        target_shape, weapon_shape = arbiter.shapes
+        target = target_shape.ball
         attacker = weapon_shape.ball
 
-        if victim == attacker:
+        if target == attacker:
             return False
 
-        dmg = max(1, attacker.attack - victim.defense)
-        victim.hp -= dmg
-        print(f"{attacker.name} hit {victim.name} for {dmg}!")
+        damage = attacker.attack
+        target.hp -= damage
+        print(f"{attacker.name} hit {target.name} for {damage}!")
         
-        attacker.on_hit(victim)
+        attacker.on_hit(target)
         attacker.flash_timer = config.BALL_FLASH_DURATION
 
         # Visual Knockback
-        direction = (victim.body.position - attacker.body.position).normalized()
-        victim.body.apply_impulse_at_local_point(direction * config.KNOCKBACK_IMPULSE)
+        direction = (target.body.position - attacker.body.position).normalized()
+        target.body.apply_impulse_at_local_point(direction * config.KNOCKBACK_IMPULSE)
         attacker.body.apply_impulse_at_local_point(-direction * config.RECOIL_IMPULSE)
         self.bullet_time_timer = config.BULLET_TIME_DURATION
-        self.bullet_time_balls = [attacker, victim]
+        self.bullet_time_balls = [attacker, target]
         attacker.rotation_speed *= -1
 
         return True

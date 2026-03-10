@@ -19,10 +19,9 @@ class Ball:
         self.color = color
 
         # Stats (Default / Base)
-        self.max_hp = 100
+        self.max_hp = config.BALL_BASE_HP
         self.hp = self.max_hp
         self.attack = 10
-        self.defense = 5
         self.attack_speed = 1.0
         self.speed = 500
         self.flash_timer = 0.0
@@ -86,7 +85,6 @@ class Rogue(Ball):
     def __init__(self, x, y, space, name="Rogue", radius=config.BALL_RADIUS):
         super().__init__(x, y, space, name, color=config.COLOR_ROGUE, radius=radius)
         self.attack = config.ROGUE_ATTACK
-        self.defense = config.ROGUE_DEFENSE
         self.attack_speed = config.ROGUE_ATTACK_SPEED
         self.speed = config.ROGUE_SPEED
         self.rotation_speed = config.ROGUE_ROTATION_SPEED
@@ -110,7 +108,6 @@ class Berserker(Ball):
         self.max_hp = config.BERSERKER_HP
         self.hp = self.max_hp
         self.attack = config.BERSERKER_ATTACK
-        self.defense = config.BERSERKER_DEFENSE
         self.rotation_speed = config.BERSERKER_ROTATION_SPEED
 
     def _setup_weapon(self, space):
@@ -130,7 +127,6 @@ class Paladin(Ball):
         self.max_hp = config.PALADIN_HP
         self.hp = self.max_hp
         self.attack = config.PALADIN_ATTACK
-        self.defense = config.PALADIN_DEFENSE
         self.rotation_speed = config.PALADIN_ROTATION_SPEED
 
     def _setup_weapon(self, space):
@@ -141,15 +137,16 @@ class Paladin(Ball):
         self._create_weapon_shapes(space)
 
     def on_hit(self, target):
-        # Paladin Mechanic: Fortify Defense on hit
-        self.defense += 1
+        # Paladin Mechanic: Fortify Health on hit
+        self.max_hp += 5
+        self.hp += 5
 
 class Monk(Ball):
     def __init__(self, x, y, space, name="Monk", radius=config.BALL_RADIUS):
         super().__init__(x, y, space, name, color=config.COLOR_MONK, radius=radius)
-        self.hp = config.MONK_HP
+        self.max_hp = config.MONK_HP
+        self.hp = self.max_hp
         self.attack = config.MONK_ATTACK
-        self.defense = config.MONK_DEFENSE
         self.attack_speed = config.MONK_ATTACK_SPEED
         self.speed = config.MONK_SPEED
         self.rotation_speed = config.MONK_ROTATION_SPEED
