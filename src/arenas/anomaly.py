@@ -1,7 +1,7 @@
 import math
 import pygame
 import pymunk
-import config
+import src.config as config
 
 class Anomaly:
     def __init__(self, space, x, y, duration=0):

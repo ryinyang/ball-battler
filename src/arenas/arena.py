@@ -1,5 +1,5 @@
 import pymunk
-import config
+import src.config as config
 
 class Arena:
     def __init__(self, space, vertices=None):
