@@ -1,10 +1,26 @@
+import pygame
 import pymunk
 import config
+
+class Obstacle:
+    def __init__(self, space, x, y):
+        self.space = space
+        self.body = pymunk.Body(body_type=pymunk.Body.STATIC)
+        self.body.position = (x, y)
+        self.shape = None
+        self.color = config.COLOR_OBSTACLE
+
+    def draw(self, screen):
+        pass
+
+    def on_collide(self, ball):
+        pass
 
 class Arena:
     def __init__(self, space, vertices=None):
         self.space = space
         self.walls = []
+        self.obstacles = []
         
         if vertices:
             self.vertices = vertices

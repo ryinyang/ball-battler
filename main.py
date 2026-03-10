@@ -23,6 +23,7 @@ class Game:
         # Handlers
         h_weapon = self.space.on_collision(config.COLLISION_TYPE_BALL, config.COLLISION_TYPE_WEAPON, begin=self.handle_weapon_hit)
         h_clash = self.space.on_collision(config.COLLISION_TYPE_WEAPON, config.COLLISION_TYPE_WEAPON, begin=self.handle_weapon_clash)
+        h_obstacle = self.space.on_collision(config.COLLISION_TYPE_BALL, config.COLLISION_TYPE_OBSTACLE, begin=self.handle_obstacle_hit)
 
         # Game Objects
         self.arena = OctagonArena(self.space, self.WIDTH, self.HEIGHT)
@@ -91,6 +92,13 @@ class Game:
             ball_a.body.apply_impulse_at_local_point(-direction * config.WEAPON_CLASH_IMPULSE)
             ball_b.body.apply_impulse_at_local_point(direction * config.WEAPON_CLASH_IMPULSE)
 
+        return True
+
+    def handle_obstacle_hit(self, arbiter, space, data):
+        ball_shape, obstacle_shape = arbiter.shapes
+        ball = ball_shape.ball
+        obstacle = obstacle_shape.obstacle
+        obstacle.on_collide(ball)
         return True
 
     def check_proximity_bullet_time(self):
@@ -173,6 +181,10 @@ class Game:
     def draw(self):
         self.screen.fill(config.COLOR_BG)
         
+        # Draw Obstacles
+        for obstacle in self.arena.obstacles:
+            obstacle.draw(self.screen)
+
         # Draw Bullet Time Highlights
         if self.bullet_time_timer > 0:
             for ball in self.bullet_time_balls:
