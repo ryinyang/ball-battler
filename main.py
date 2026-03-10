@@ -2,8 +2,9 @@ import random
 import pygame
 import pymunk
 from ball import Rogue, Berserker, Paladin, Monk
-from arena import OctagonArena, Bumper
+from arena import OctagonArena
 from anomaly import BlackHole
+from obstacle import Bumper
 from item import Item, Potion
 import config
 
