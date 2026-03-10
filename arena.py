@@ -2,21 +2,14 @@ import pymunk
 import config
 
 class Arena:
-    def __init__(self, space, width=None, height=None, vertices=None):
+    def __init__(self, space, vertices=None):
         self.space = space
         self.walls = []
         
         if vertices:
             self.vertices = vertices
-        elif width is not None and height is not None:
-            self.vertices = [
-                (0, 0),
-                (width, 0),
-                (width, height),
-                (0, height)
-            ]
         else:
-            raise ValueError("Arena requires either vertices or width/height")
+            raise ValueError("Arena requires vertices")
 
         self._build_walls()
 
@@ -31,6 +24,16 @@ class Arena:
             wall.filter = pymunk.ShapeFilter(categories=config.CATEGORY_WALL)
             self.space.add(wall)
             self.walls.append(wall)
+
+class BasicArena(Arena):
+    def __init__(self, space, width, height):
+        vertices = [
+            (0, 0),
+            (width, 0),
+            (width, height),
+            (0, height)
+        ]
+        super().__init__(space, vertices=vertices)
 
 class OctagonArena(Arena):
     def __init__(self, space, width, height, corner_cut=150):

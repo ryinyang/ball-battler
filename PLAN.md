@@ -18,7 +18,6 @@ The goal of this phase is strictly a "Zero-Player Game" where circles bounce in 
     - In each iteration, call `space.step(dt)` to advance the physics, clear the screen, and draw the Pygame circles at the coordinates of the Pymunk bodies.
 6. Documentation:
     - Update the README.md to document the project's overview and architecture, set up, and how to run the game
----
 ## Phase 1: Core Combat & Stats
 
 In this phase, we move from "bouncing balls" to "battling balls" by introducing stats and hit registration.
@@ -28,7 +27,6 @@ In this phase, we move from "bouncing balls" to "battling balls" by introducing 
     - Damage Logic: When a valid collision occurs, calculate damage. A standard formula works well here:
         Damage=max(1,Attackeratk​−Defenderdef​)
     - Death Loop: If a ball's `hp` drops to 0 or below, safely remove its body and shape from the Pymunk space and its instance from the Pygame render list.
----
 ## Phase 2: Basic UI & Physics Tweaks
 
 In this phase, we add some basic UI to keep track of the main stats of each ball and tweak the physics.
@@ -39,7 +37,6 @@ In this phase, we add some basic UI to keep track of the main stats of each ball
     - When the balls collide, add a small amount of velocity ~1%
     - Colliding with walls should not reduce the velocity
     - Add an attraction force between balls. As they get closer to each other, they accelerate a towards each other. Ensure this attraction force is much smaller than the gravity force.
----
 ## Phase 3: The Ghost-Weapon System
 
 The goal of this phase is to attach a rotating weapon to each ball that detects hits but exerts zero physical force on the owner while still exerting physical force on the target.
@@ -71,14 +68,12 @@ Since the weapon is a sensor, it won't "hit" the enemy automatically. You must c
     2. If ready: Apply damage to the target and trigger the attacker's `on_hit()` scaling logic (e.g., Rogue gains +5% speed).
 - Visual-Only Knockback: If you want the hit to _look_ powerful, manually apply a small `impulse` to the target ball only inside this callback. This keeps the attacker’s movement "pure."
 
----
 
 ### Step 3.4: Visual Rendering
 
 Since the sensor is invisible in the physics simulation, you must draw it manually in Pygame.
 - Use `pygame.draw.polygon()` using the coordinates calculated in Step 3.2.
 - Polish: Color the weapon based on the class (Rogue = Purple, Berserker = Red) and make it flash white for 2 frames when it successfully triggers a hit.
----
 ## Phase 4: Refactor
 
 In this phase, we will refactor our existing codebase so that it is readable, clean, and extensible.
@@ -101,18 +96,16 @@ Separation of Physics & Logic
 - Why: Collision handlers currently mix logging, damage calculation, and physics impulses.
 - How: Keep collision callbacks focused. They should identify the entities involved and delegate the gameplay logic (damage, effects) to the entities themselves (e.g., attacker.deal_damage(victim)).
 
----
 ## Phase 5: Add RPG Classes
 
 Each class will now define the _dimensions_ of its sensor and the _speed_ of its rotation.
 
-|Class|Sensor Dimensions|Rotation Behavior|
-|---|---|---|
-|Rogue|Thin & Short (Dagger)|High RPM; resets angle slightly on hit.|
-|Berserker|Wide & Long (Axe)|Slow RPM; heavy visual trail.|
-|Monk|Two small Squares (Fists)|Rapid 180-degree alternating strikes.|
-|Ranger|Shoots arrows out of a bow|High RPM|
----
+| Class     | Sensor Dimensions          | Rotation Behavior                       |
+| --------- | -------------------------- | --------------------------------------- |
+| Rogue     | Thin & Short (Dagger)      | High RPM; resets angle slightly on hit. |
+| Berserker | Wide & Long (Axe)          | Slow RPM; heavy visual trail.           |
+| Monk      | Two small Squares (Fists)  | Rapid 180-degree alternating strikes.   |
+| Ranger    | Shoots arrows out of a bow | High RPM                                |
 ## Phase 6: Combat Tweaks
 
 - Bullet Time: When a weapon connects with a victim ball, temporarily slow down time to emphasize the hit.
@@ -120,43 +113,73 @@ Each class will now define the _dimensions_ of its sensor and the _speed_ of its
 - Counter Rotation: When a weapon connects with a victim ball, reverse the direction of the weapon's rotation.
 - Weapon collisions: When a weapon connects with another weapon, deal no damage, reverse weapon rotation, and apply knockback impulse
 
----
 ## Phase 7: Custom Arenas & Obstacles
 
 Once combat is functional, it's time to extend the environment beyond a simple box to create tactical depth.
 
-Arena Refactor
-- Arena Factory: Create an `Arena` class that accepts a list of coordinates to draw complex boundary polygons instead of just a rectangle.
-- New Arena: The Octagon
-    - This arena is a standard 8 sided octagon
-    - The bottom wall will be extra bouncy, causing balls to rapidly increase velocity
+- [x] Arena Refactor
+	- [x] Arena Factory: Create an `Arena` class that accepts a list of coordinates to draw complex boundary polygons instead of just a rectangle.
+	- [x] Refactor the original rectangle arena as a new class using the factory. Call this class BasicArena
+	- [x] New Arena: The Octagon
+	    - This arena is a standard 8 sided octagon
+	    - The bottom wall will be extra bouncy, causing balls to rapidly increase velocity
+- Obstacles: Some wall or structure in the Arena that impacts the battle. Usually permanent.
+	- Neutral Obstacles:
+		- [ ] Bumper: When a ball contacts a Bumper, increase the speed of that ball.
+	- Hazardous Obstacles:
+		- [ ] Sticker: When a ball contacts a Sticker, make it stick to the wall temporarily, then reduce its velocity.
+		- [ ] Poker: When a ball contacts a Poker, deal damage to that ball
+	- Buffing Obstacles:
+		- [ ] Healer: When a ball contacts a Healer, heal that ball.
+		- [ ] Attack Buff: When a ball contacts a Attack Buff, increase that ball's attack.
+- Items: A item is something that can give a Ball some benefit. Usually temporary or consumable.
+	- [ ] Temporary Buffing Items: Periodically add items which buff the balls
+	- [ ] Healing Items: Heal damaged HP
+- Special Environmental Effects: Special effects that Arenas may contain that drastically change the way that the battle is played. Usually unique to an Arena.
+	- [ ] Black hole: A non-solid, temporary, strong attraction force that pulls all balls towards it. Manifests as a black hole that draws a circle in the middle of the arena. After slowly walking the circular path, it disappears, allowing balls to resume their original trajectories.
 
-Obstacles, buffs, items, etc.
-- Static Obstacles: Add interior walls or "bumpers" (static Pymunk circles or polygons) that balls can bounce off of to disrupt trajectories.
-- Kinematic Hazards: Introduce slowly spinning kinematic platforms in the center of the arena that alter the physics of the battle without taking damage.
-- Temporary Buffs: Periodically add items which buff the balls
-- Healing Items: Heal damaged HP
-- Black hole: A temporary, strong attraction force that pulls all balls towards it. Manifests as a black hole that draws a circle in the middle of the arena. After slowly walking the circular path, it disappears, allowing balls to resume their original trajectories.
-
-Minor Improvements:
-- Remove Defense as a stat.
----
+Misc Changes:
+- [ ] Remove Defense as a stat. As a viewer, it is difficult to understand defense. To rebalance, add more HP relative to the defense characters had.
 ## Phase 8: UI & Polish
 
 Make the simulation readable and satisfying to watch.
 
+Classes
+- Select a few classes from Earclacks to emulate. Replace the ones we have now.
+
+Combat
 - Add unique scaling for each class type.
+
+UI
 - Health Display on Balls: Show the current HP on the ball itself as well
 - Visual Feedback: Briefly flash the ball white when it takes damage, or add a small colored particle effect when a class scales its stat.
 - Match State: Add text to display the winner when only one class/team remains, and a keybind to reset the arena.
-- Customizeable Frame Rate
-- Rubber Band Walls: Upgrade the UI to make the arena look like the walls are rubberbanding the balls back into the main play field. Field should flex and bend, then launch the ball towards the enemy.
+- Pixel Art: Add pixel art for each weapon type using OpenMoji and PixelIt
+- Sounds
+    - Weapon on Weapon CLANG
+    - Weapon on Ball OOF
+
+UX
+- Customizable Frame Rate
+- Octagon Arena:
+    - Add some visual indicator that the bottom wall accelerates the ball
 - Post Battle Screen (Metrics):
     - Who won?
     - How much damage did each ball do?
     - What was the average speed of each ball?
     - Superlatives
         - Most damage, highest speed, most hits
+- Build your own battlers
+    - Select base, weapon, class? Would probably require a full refactor of the data models/classes.
+
+Arenas
+- New Arena: Wrestling Ring
+    - The walls of this Arena are elastic, like the a Wrestling Ring
+    - Bouncing on the wall will 
+        - Start Bullet Time
+        - Aim the ball directly towards a target ball
+    - For balance reasons, the wall should have some cooldown time or maybe switch to a different wall
+    - Balance Idea: Bottom wall is bouncy while top wall aims directly to the target ball
 
 ## Phase 9: Machine Learning
 
@@ -171,7 +194,6 @@ In this phase, we add Machine Learning techniques to play around with the classe
     - Instant mode: don't render anything to the user, just simulate the battle internally and return the results
 - Add libs (research which makes the most sense for our usecase)
 
----
 ## Phase x: Refactoring and Testing and Bug Fixes
 
 Refactor the code to clean everything up. Add tests to ensure features are built correctly.
