@@ -207,6 +207,11 @@ class Game:
             dt *= config.BULLET_TIME_SCALE
             self.bullet_time_timer -= config.DT
             
+        for anomaly in self.arena.anomalies[:]:
+            anomaly.update(dt, self.balls)
+            if anomaly.finished:
+                self.arena.anomalies.remove(anomaly)
+
         for ball in self.balls: ball.update(dt)
         self.space.step(dt)
         self._check_deaths()
@@ -224,6 +229,10 @@ class Game:
         # Draw Obstacles
         for obstacle in self.arena.obstacles:
             obstacle.draw(self.screen)
+
+        # Draw Effects
+        for effect in self.arena.anomalies:
+            effect.draw(self.screen)
 
         # Draw Items
         for item in self.items:
