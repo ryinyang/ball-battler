@@ -1,7 +1,7 @@
 import random
 import pygame
 import pymunk
-from ball import Rogue, Berserker, Paladin, Monk
+from ball import Rogue, Berserker, Paladin, Monk, Warrior, Ranger
 from arena import OctagonArena
 from anomaly import BlackHole
 from obstacle import Bumper
@@ -52,19 +52,26 @@ class Game:
         # Spawn 4 classes in corners
         offset = 150
         
-        b1 = Rogue(offset, offset, self.space, "Rogue")
-        b1.body.velocity = (200, 200)
+        # b1 = Rogue(offset, offset, self.space, "Rogue")
+        # b1.body.velocity = (200, 200)
         
-        b2 = Berserker(self.WIDTH - offset, offset, self.space, "Berserker")
-        b2.body.velocity = (-200, 200)
+        # b2 = Berserker(self.WIDTH - offset, offset, self.space, "Berserker")
+        # b2.body.velocity = (-200, 200)
 
-        b3 = Paladin(offset, self.HEIGHT - offset, self.space, "Paladin")
-        b3.body.velocity = (200, -200)
+        # b3 = Paladin(offset, self.HEIGHT - offset, self.space, "Paladin")
+        # b3.body.velocity = (200, -200)
 
-        b4 = Monk(self.WIDTH - offset, self.HEIGHT - offset, self.space, "Monk")
-        b4.body.velocity = (-200, -200)
+        # b4 = Monk(self.WIDTH - offset, self.HEIGHT - offset, self.space, "Monk")
+        # b4.body.velocity = (-200, -200)
         
-        self.balls = [b1, b2, b3, b4]
+        b5 = Warrior(self.WIDTH / 2, self.HEIGHT / 2, self.space, "Warrior")
+        b5.body.velocity = (100, 100)
+        
+        b6 = Ranger(self.WIDTH / 2, offset, self.space, "Ranger")
+        b6.body.velocity = (0, 200)
+        
+        # self.balls = [b1, b2, b3, b4, b5, b6]
+        self.balls = [b5, b6]
 
     def _spawn_item(self):
         # Don't spawn items if there are too many
@@ -94,13 +101,33 @@ class Game:
         attacker.on_hit(target)
         attacker.flash_timer = config.BALL_FLASH_DURATION
 
+        if hasattr(weapon_shape, 'trap'):
+            target.hp += damage # Revert base attack damage
+            target.hp -= 5      # Apply specific trap damage
+            target.stun_timer = 1.0
+            print(f"{attacker.name}'s Trap hit {target.name}!")
+            weapon_shape.trap.destroy()
+            if hasattr(attacker, 'traps') and weapon_shape.trap in attacker.traps:
+                attacker.traps.remove(weapon_shape.trap)
+            return True
+
+        is_projectile = hasattr(weapon_shape, 'projectile')
+
         # Visual Knockback
-        direction = (target.body.position - attacker.body.position).normalized()
+        if is_projectile:
+            direction = weapon_shape.body.velocity.normalized()
+            weapon_shape.projectile.destroy()
+            if hasattr(attacker, 'projectiles') and weapon_shape.projectile in attacker.projectiles:
+                attacker.projectiles.remove(weapon_shape.projectile)
+        else:
+            direction = (target.body.position - attacker.body.position).normalized()
+            attacker.body.apply_impulse_at_local_point(-direction * config.RECOIL_IMPULSE)
+            attacker.rotation_speed *= -1
+
         target.body.apply_impulse_at_local_point(direction * config.KNOCKBACK_IMPULSE)
-        attacker.body.apply_impulse_at_local_point(-direction * config.RECOIL_IMPULSE)
+        
         self.bullet_time_timer = config.BULLET_TIME_DURATION
         self.bullet_time_balls = [attacker, target]
-        attacker.rotation_speed *= -1
 
         return True
 
@@ -110,6 +137,24 @@ class Game:
         ball_b = shape_b.ball
 
         if ball_a == ball_b:
+            return False
+
+        # Handle projectile clash
+        is_proj_a = hasattr(shape_a, 'projectile')
+        is_proj_b = hasattr(shape_b, 'projectile')
+        is_trap_a = hasattr(shape_a, 'trap')
+        is_trap_b = hasattr(shape_b, 'trap')
+
+        if is_proj_a or is_proj_b or is_trap_a or is_trap_b:
+            for s in [shape_a, shape_b]:
+                if hasattr(s, 'projectile'):
+                    s.projectile.destroy()
+                    if hasattr(s.ball, 'projectiles') and s.projectile in s.ball.projectiles:
+                        s.ball.projectiles.remove(s.projectile)
+                elif hasattr(s, 'trap'):
+                    s.trap.destroy()
+                    if hasattr(s.ball, 'traps') and s.trap in s.ball.traps:
+                        s.ball.traps.remove(s.trap)
             return False
 
         # Reverse rotation
@@ -232,6 +277,16 @@ class Game:
     def _check_deaths(self):
         for ball in self.balls[:]:
             if ball.hp <= 0:
+                if hasattr(ball, 'projectiles'):
+                    for p in ball.projectiles:
+                        p.destroy()
+                    ball.projectiles.clear()
+
+                if hasattr(ball, 'traps'):
+                    for t in ball.traps:
+                        t.destroy()
+                    ball.traps.clear()
+
                 self.space.remove(ball.body, ball.shape, *ball.weapon_shapes)
                 self.balls.remove(ball)
                 print(f"{ball.name} eliminated!")
@@ -284,6 +339,26 @@ class Game:
                 
                 weapon_color = config.COLOR_WEAPON_FLASH if ball.flash_timer > 0 else config.COLOR_WEAPON_DEFAULT
                 pygame.draw.polygon(self.screen, weapon_color, world_verts)
+
+            # Draw Projectiles
+            if hasattr(ball, 'projectiles'):
+                for p in ball.projectiles:
+                    p_verts = []
+                    for v in p.shape.get_vertices():
+                        # World transform
+                        wv = p.body.position + v.rotated(p.body.angle)
+                        p_verts.append((int(wv.x), int(wv.y)))
+                    pygame.draw.polygon(self.screen, ball.color, p_verts)
+
+            # Draw Traps
+            if hasattr(ball, 'traps'):
+                for t in ball.traps:
+                    t_verts = []
+                    for v in t.shape.get_vertices():
+                        # World transform
+                        wv = t.body.position + v.rotated(t.body.angle)
+                        t_verts.append((int(wv.x), int(wv.y)))
+                    pygame.draw.polygon(self.screen, (200, 50, 50), t_verts)
 
         # Draw UI
         for i, ball in enumerate(self.balls):

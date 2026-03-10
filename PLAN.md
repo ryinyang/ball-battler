@@ -118,36 +118,40 @@ Each class will now define the _dimensions_ of its sensor and the _speed_ of its
 Once combat is functional, it's time to extend the environment beyond a simple box to create tactical depth.
 
 - [x] Arena Refactor
-	- [x] Arena Factory: Create an `Arena` class that accepts a list of coordinates to draw complex boundary polygons instead of just a rectangle.
-	- [x] Refactor the original rectangle arena as a new class using the factory. Call this class BasicArena
-	- [x] New Arena: The Octagon
-	    - This arena is a standard 8 sided octagon
-	    - The bottom wall will be extra bouncy, causing balls to rapidly increase velocity
+    - [x] Arena Factory: Create an `Arena` class that accepts a list of coordinates to draw complex boundary polygons instead of just a rectangle.
+    - [x] Refactor the original rectangle arena as a new class using the factory. Call this class BasicArena
+    - [x] New Arena: The Octagon
+        - This arena is a standard 8 sided octagon
+        - The bottom wall will be extra bouncy, causing balls to rapidly increase velocity
 - Obstacles: Some wall or structure in the Arena that impacts the battle. Usually permanent.
-	- Neutral Obstacles:
-		- [x] Bumper Obstacle: When a ball contacts a Bumper, increase the speed of that ball.
-	- Hazardous Obstacles: (Later)
-		- [ ] Sticker Obstacle: When a ball contacts a Sticker, make it stick to the wall temporarily, then reduce its velocity.
-		- [ ] Poker Obstacle: When a ball contacts a Poker, deal damage to that ball
-		- [ ] Slow-Mo-Zone: The first ball to enter this zone slows down to 1% normal speed. Has a cool down until another ball can trigger this effect.
-		- [ ] Speed Boost Zone: When a ball enters this zone, it accelerates in the direction of the boost.
-	- Buffing Obstacles:
-		- [ ] Attack Buff: When a ball contacts a Attack Buff, increase that ball's attack.
+    - Neutral Obstacles:
+        - [x] Bumper Obstacle: When a ball contacts a Bumper, increase the speed of that ball.
+    - Hazardous Obstacles: (Later)
+        - [ ] Sticker Obstacle: When a ball contacts a Sticker, make it stick to the wall temporarily, then reduce its velocity.
+        - [ ] Poker Obstacle: When a ball contacts a Poker, deal damage to that ball
+        - [ ] Slow-Mo-Zone: The first ball to enter this zone slows down to 1% normal speed. Has a cool down until another ball can trigger this effect.
+        - [ ] Speed Boost Zone: When a ball enters this zone, it accelerates in the direction of the boost.
+    - Buffing Obstacles:
+        - [ ] Attack Buff: When a ball contacts a Attack Buff, increase that ball's attack.
 - Items: A item is something that can give a Ball some benefit. Usually temporary or consumable.
-	- [x] Healing Ball: A consumable that, when collected by a ball, heals that ball by X HP
+    - [x] Healing Ball: A consumable that, when collected by a ball, heals that ball by X HP
 - Anomalies: Special effects that Arenas may contain that drastically change the way that the battle is played. Usually unique to an Arena.
-	- [x] Black hole: A non-solid, temporary, strong attraction force that pulls all balls towards it. Manifests as a black hole that draws a circle in the middle of the arena. After slowly walking the circular path, it disappears, allowing balls to resume their original trajectories.
+    - [x] Black hole: A non-solid, temporary, strong attraction force that pulls all balls towards it. Manifests as a black hole that draws a circle in the middle of the arena. After slowly walking the circular path, it disappears, allowing balls to resume their original trajectories.
 
 Misc Changes:
 - [x] Remove Defense as a stat. As a viewer, it is difficult to understand defense. To rebalance, add more HP relative to the defense characters had.
-- [ ] Refactor the logic that populates an Arena with Obstacles, Items, and Anomalies such that the game client can decide at run time which things to add to an Arena. Make it modular and easy to customize.
-- [ ] Refactor Obstacles into a separate file
+- [x] Refactor the logic that populates an Arena with Obstacles, Items, and Anomalies such that the game client can decide at run time which things to add to an Arena. Make it modular and easy to customize.
+- [x] Refactor Obstacles into a separate file
 ## Phase 8: UI & Polish
 
 Make the simulation readable and satisfying to watch.
 
 Classes
-- Select a few classes from Earclacks to emulate. Replace the ones we have now.
+- New classes
+    - Warrior: uses a single sword
+    - Monk: uses 2 fists
+    - Tank: uses a shield
+    - Ranger: uses bow and arrows
 
 Combat
 - Add unique scaling for each class type.
@@ -155,9 +159,9 @@ Combat
 UI
 - Health Display on Balls: Show the current HP on the ball itself as well
 - Visual Feedback: 
-	- Attack Feedback: Briefly flash the ball white when it takes damage, or add a small colored particle effect when a class scales its stat.
-	- Bumper Feedback
-	- Bouncy Wall Feedback
+    - Attack Feedback: Briefly flash the ball white when it takes damage, or add a small colored particle effect when a class scales its stat.
+    - Bumper Feedback
+    - Bouncy Wall Feedback
 - Match State: Add text to display the winner when only one class/team remains, and a keybind to reset the arena.
 - Pixel Art: Add pixel art for each weapon type using OpenMoji and PixelIt
 - Sounds
