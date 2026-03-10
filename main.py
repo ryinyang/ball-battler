@@ -2,7 +2,8 @@ import random
 import pygame
 import pymunk
 from ball import Rogue, Berserker, Paladin, Monk
-from arena import OctagonArena
+from arena import OctagonArena, Bumper
+from anomaly import BlackHole
 from item import Item, Potion
 import config
 
@@ -32,8 +33,19 @@ class Game:
         # Game Objects
         self.arena = OctagonArena(self.space, self.WIDTH, self.HEIGHT)
         self.balls = []
-        self.items = []
+        self._populate_arena()
         self._spawn_balls()
+
+    def _populate_arena(self):
+        # Bumpers in a + shape
+        w, h = self.WIDTH, self.HEIGHT
+        # self.arena.add_obstacle(Bumper(self.space, w / 2 - 150, h / 2))
+        # self.arena.add_obstacle(Bumper(self.space, w / 2 + 150, h / 2))
+        # self.arena.add_obstacle(Bumper(self.space, w / 2, h / 2 - 150))
+        # self.arena.add_obstacle(Bumper(self.space, w / 2, h / 2 + 150))
+        
+        # Black Hole
+        self.arena.add_anomaly(BlackHole(self.space, w / 2, h / 2))
 
     def _spawn_balls(self):
         # Spawn 4 classes in corners
@@ -55,7 +67,7 @@ class Game:
 
     def _spawn_item(self):
         # Don't spawn items if there are too many
-        if len(self.items) >= 5:
+        if len(self.arena.items) >= 5:
             return
 
         # Find a valid spawn position (not too close to walls or obstacles)
@@ -64,7 +76,7 @@ class Game:
         y = random.uniform(padding, self.HEIGHT - padding)
         
         new_item = Potion(self.space, x, y)
-        self.items.append(new_item)
+        self.arena.add_item(new_item)
 
     def handle_weapon_hit(self, arbiter, space, data):
         target_shape, weapon_shape = arbiter.shapes
@@ -131,7 +143,7 @@ class Game:
                 items_list.remove(item_to_remove)
                 item_to_remove.remove()
 
-        space.add_post_step_callback(remove_item_callback, item, self.items)
+        space.add_post_step_callback(remove_item_callback, item, self.arena.items)
         return False # It's a sensor, no physical response needed
 
     def check_proximity_bullet_time(self):
@@ -231,11 +243,11 @@ class Game:
             obstacle.draw(self.screen)
 
         # Draw Effects
-        for effect in self.arena.anomalies:
-            effect.draw(self.screen)
+        for anomaly in self.arena.anomalies:
+            anomaly.draw(self.screen)
 
         # Draw Items
-        for item in self.items:
+        for item in self.arena.items:
             item.draw(self.screen)
 
         # Draw Bullet Time Highlights

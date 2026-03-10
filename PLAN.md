@@ -135,12 +135,12 @@ Once combat is functional, it's time to extend the environment beyond a simple b
 		- [ ] Attack Buff: When a ball contacts a Attack Buff, increase that ball's attack.
 - Items: A item is something that can give a Ball some benefit. Usually temporary or consumable.
 	- [x] Healing Ball: A consumable that, when collected by a ball, heals that ball by X HP
-- Special Environmental Effects: Special effects that Arenas may contain that drastically change the way that the battle is played. Usually unique to an Arena.
+- Anomalies: Special effects that Arenas may contain that drastically change the way that the battle is played. Usually unique to an Arena.
 	- [x] Black hole: A non-solid, temporary, strong attraction force that pulls all balls towards it. Manifests as a black hole that draws a circle in the middle of the arena. After slowly walking the circular path, it disappears, allowing balls to resume their original trajectories.
 
 Misc Changes:
-- [ ] Remove Defense as a stat. As a viewer, it is difficult to understand defense. To rebalance, add more HP relative to the defense characters had.
-- [ ] Refactor the logic that populates an Arena with Obstacles, Items, and Special Environmental Effects such that the game client can decide at run time which things to add to an Arena. Make it modular and easy to customize.
+- [x] Remove Defense as a stat. As a viewer, it is difficult to understand defense. To rebalance, add more HP relative to the defense characters had.
+- [ ] Refactor the logic that populates an Arena with Obstacles, Items, and Anomalies such that the game client can decide at run time which things to add to an Arena. Make it modular and easy to customize.
 - [ ] Refactor Obstacles into a separate file
 ## Phase 8: UI & Polish
 

@@ -1,7 +1,6 @@
 import pygame
 import pymunk
 import config
-from anomaly import BlackHole
 
 class Obstacle:
     def __init__(self, space, x, y):
@@ -45,6 +44,7 @@ class Arena:
         self.walls = []
         self.obstacles = []
         self.anomalies = []
+        self.items = []
         
         if vertices:
             self.vertices = vertices
@@ -52,6 +52,15 @@ class Arena:
             raise ValueError("Arena requires vertices")
 
         self._build_walls()
+
+    def add_obstacle(self, obstacle):
+        self.obstacles.append(obstacle)
+
+    def add_anomaly(self, anomaly):
+        self.anomalies.append(anomaly)
+
+    def add_item(self, item):
+        self.items.append(item)
 
     def _build_walls(self):
         for i in range(len(self.vertices)):
@@ -88,13 +97,6 @@ class OctagonArena(Arena):
             (0, height - corner_cut)      # Left-Bottom
         ]
         super().__init__(space, vertices=vertices)
-        
-        # Bumpers in a + shape
-        # self.obstacles.append(Bumper(space, width / 2 - 150, height / 2))
-        # self.obstacles.append(Bumper(space, width / 2 + 150, height / 2))
-        # self.obstacles.append(Bumper(space, width / 2, height / 2 - 150))
-        # self.obstacles.append(Bumper(space, width / 2, height / 2 + 150))
-        self.anomalies.append(BlackHole(space, width / 2, height / 2))
 
     def _build_walls(self):
         max_y = max(v[1] for v in self.vertices)
