@@ -1,7 +1,9 @@
+import random
 import pygame
 import pymunk
 from ball import Rogue, Berserker, Paladin, Monk
 from arena import OctagonArena
+from item import Item, HealingItem
 import config
 
 class Game:
@@ -15,6 +17,7 @@ class Game:
         self.running = True
         self.bullet_time_timer = 0.0
         self.bullet_time_balls = []
+        self.item_spawn_timer = config.ITEM_SPAWN_INTERVAL
 
         # Physics Setup
         self.space = pymunk.Space()
@@ -24,10 +27,12 @@ class Game:
         h_weapon = self.space.on_collision(config.COLLISION_TYPE_BALL, config.COLLISION_TYPE_WEAPON, begin=self.handle_weapon_hit)
         h_clash = self.space.on_collision(config.COLLISION_TYPE_WEAPON, config.COLLISION_TYPE_WEAPON, begin=self.handle_weapon_clash)
         h_obstacle = self.space.on_collision(config.COLLISION_TYPE_BALL, config.COLLISION_TYPE_OBSTACLE, begin=self.handle_obstacle_hit)
+        h_item = self.space.on_collision(config.COLLISION_TYPE_BALL, config.COLLISION_TYPE_ITEM, begin=self.handle_item_pickup)
 
         # Game Objects
         self.arena = OctagonArena(self.space, self.WIDTH, self.HEIGHT)
         self.balls = []
+        self.items = []
         self._spawn_balls()
 
     def _spawn_balls(self):
@@ -47,6 +52,19 @@ class Game:
         b4.body.velocity = (-200, -200)
         
         self.balls = [b1, b2, b3, b4]
+
+    def _spawn_item(self):
+        # Don't spawn items if there are too many
+        if len(self.items) >= 5:
+            return
+
+        # Find a valid spawn position (not too close to walls or obstacles)
+        padding = 50
+        x = random.uniform(padding, self.WIDTH - padding)
+        y = random.uniform(padding, self.HEIGHT - padding)
+        
+        new_item = HealingItem(self.space, x, y)
+        self.items.append(new_item)
 
     def handle_weapon_hit(self, arbiter, space, data):
         victim_shape, weapon_shape = arbiter.shapes
@@ -100,6 +118,21 @@ class Game:
         obstacle = obstacle_shape.obstacle
         obstacle.on_collide(ball)
         return True
+
+    def handle_item_pickup(self, arbiter, space, data):
+        ball_shape, item_shape = arbiter.shapes
+        ball = ball_shape.ball
+        item = item_shape.item
+
+        item.apply_effect(ball)
+        
+        def remove_item_callback(space, item_to_remove, items_list):
+            if item_to_remove in items_list:
+                items_list.remove(item_to_remove)
+                item_to_remove.remove()
+
+        space.add_post_step_callback(remove_item_callback, item, self.items)
+        return False # It's a sensor, no physical response needed
 
     def check_proximity_bullet_time(self):
         # If a hit event is currently active (long timer), don't interfere
@@ -158,9 +191,16 @@ class Game:
             if event.type == pygame.QUIT:
                 self.running = False
 
+    def _update_item_spawner(self, dt):
+        self.item_spawn_timer -= dt
+        if self.item_spawn_timer <= 0:
+            self._spawn_item()
+            self.item_spawn_timer = config.ITEM_SPAWN_INTERVAL
+
     def update(self):
         # self.apply_attraction()
         self.check_proximity_bullet_time()
+        self._update_item_spawner(config.DT)
         
         dt = config.DT
         if self.bullet_time_timer > 0:
@@ -184,6 +224,10 @@ class Game:
         # Draw Obstacles
         for obstacle in self.arena.obstacles:
             obstacle.draw(self.screen)
+
+        # Draw Items
+        for item in self.items:
+            item.draw(self.screen)
 
         # Draw Bullet Time Highlights
         if self.bullet_time_timer > 0:
