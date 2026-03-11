@@ -7,6 +7,7 @@ from src.balls.paladin import Paladin
 from src.balls.monk import Monk
 from src.balls.warrior import Warrior
 from src.balls.ranger import Ranger
+from src.balls.shadow import Shadow
 from src.arenas.arena import OctagonArena
 from src.arenas.anomaly import BlackHole
 from src.arenas.obstacle import Bumper
@@ -74,7 +75,10 @@ class Game:
         b6 = Ranger(self.WIDTH / 2, offset, self.space, "Ranger")
         b6.body.velocity = (0, 200)
         
-        self.balls = [b1, b2, b3, b4, b5, b6]
+        b7 = Shadow(self.WIDTH / 2, self.HEIGHT / 2 + 100, self.space, "Shadow")
+        b7.body.velocity = (100, -100)
+        
+        self.balls = [b1, b2, b3, b4, b5, b6, b7]
 
     def _spawn_item(self):
         # Don't spawn items if there are too many
@@ -302,6 +306,12 @@ class Game:
         for ball in self.balls:
             pos = int(ball.body.position.x), int(ball.body.position.y)
             pygame.draw.circle(self.screen, ball.color, pos, int(ball.shape.radius))
+
+            # Draw Shadow AOE Halo
+            if hasattr(ball, 'aoe_radius'):
+                halo_surf = pygame.Surface((ball.aoe_radius * 2, ball.aoe_radius * 2), pygame.SRCALPHA)
+                pygame.draw.circle(halo_surf, (*ball.color, 40), (ball.aoe_radius, ball.aoe_radius), ball.aoe_radius)
+                self.screen.blit(halo_surf, (pos[0] - ball.aoe_radius, pos[1] - ball.aoe_radius))
 
             # Draw Weapon (World Space)
             for shape in ball.weapon_shapes:

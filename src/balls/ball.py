@@ -1,6 +1,7 @@
 import math
 import pymunk
 import src.config as config
+from src.utilities import print_damage
 
 class Ball:
     def __init__(self, x, y, space, name="Ball", color=config.COLOR_BALL_DEFAULT, radius=config.BALL_RADIUS):
@@ -98,7 +99,7 @@ class Ball:
 
         # Damage Calculation
         damage = self.attack
-        print(f"{self.name} hit {target.name} for {damage}!")
+        print_damage(self, target, damage)
         target.take_damage(damage)
         self.on_hit(target)
         self.flash_timer = config.BALL_FLASH_DURATION
