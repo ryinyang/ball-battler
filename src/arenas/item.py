@@ -1,4 +1,5 @@
 import pygame
+import pygame.gfxdraw
 import pymunk
 import src.config as config
 
@@ -20,8 +21,16 @@ class Item:
     def draw(self, screen):
         """Placeholder draw method."""
         pos = int(self.body.position.x), int(self.body.position.y)
-        pygame.draw.circle(screen, self.color, pos, config.ITEM_RADIUS)
-        pygame.draw.circle(screen, (255, 255, 255), pos, config.ITEM_RADIUS, 2) # White border
+        
+        # White Border
+        r = config.ITEM_RADIUS
+        pygame.gfxdraw.filled_circle(screen, pos[0], pos[1], r, (255, 255, 255))
+        pygame.gfxdraw.aacircle(screen, pos[0], pos[1], r, (255, 255, 255))
+        
+        # Inner Color
+        c = pygame.Color(self.color)
+        pygame.gfxdraw.filled_circle(screen, pos[0], pos[1], r - 2, c)
+        pygame.gfxdraw.aacircle(screen, pos[0], pos[1], r - 2, c)
 
     def apply_effect(self, ball):
         """Placeholder for item effect logic."""

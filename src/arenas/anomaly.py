@@ -1,5 +1,6 @@
 import math
 import pygame
+import pygame.gfxdraw
 import pymunk
 from src.palette import COLOR_ORANGE
 import src.config as config
@@ -66,6 +67,21 @@ class BlackHole(Anomaly):
             return
 
         pos = (int(self.current_x), int(self.current_y))
-        pygame.draw.circle(screen, self.color, pos, config.BLACK_HOLE_RADIUS)
-        pygame.draw.circle(screen, self.border_color, pos, config.BLACK_HOLE_RADIUS + 4, 4)
-        pygame.draw.circle(screen, self.outer_border_color, pos, config.BLACK_HOLE_RADIUS + 8, 4)
+        
+        # Outer Border
+        r = config.BLACK_HOLE_RADIUS + 8
+        c = pygame.Color(self.outer_border_color)
+        pygame.gfxdraw.filled_circle(screen, pos[0], pos[1], r, c)
+        pygame.gfxdraw.aacircle(screen, pos[0], pos[1], r, c)
+
+        # Middle Border
+        r = config.BLACK_HOLE_RADIUS + 4
+        c = pygame.Color(self.border_color)
+        pygame.gfxdraw.filled_circle(screen, pos[0], pos[1], r, c)
+        pygame.gfxdraw.aacircle(screen, pos[0], pos[1], r, c)
+
+        # Core
+        r = config.BLACK_HOLE_RADIUS
+        c = pygame.Color(self.color)
+        pygame.gfxdraw.filled_circle(screen, pos[0], pos[1], r, c)
+        pygame.gfxdraw.aacircle(screen, pos[0], pos[1], r, c)

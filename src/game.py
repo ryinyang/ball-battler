@@ -1,5 +1,6 @@
 import random
 import pygame
+import pygame.gfxdraw
 import pymunk
 from src.balls.rogue import Rogue
 from src.balls.berserker import Berserker
@@ -301,7 +302,7 @@ class Game:
                         
                         c = pygame.Color(config.COLOR_HIGHLIGHT)
                         c.a = config.HALO_OPACITY
-                        pygame.draw.circle(halo_surf, c, (halo_radius, halo_radius), r)
+                        pygame.gfxdraw.filled_circle(halo_surf, halo_radius, halo_radius, r, c)
                     self.screen.blit(halo_surf, (pos[0] - halo_radius, pos[1] - halo_radius))
 
         # Draw Walls
@@ -312,7 +313,9 @@ class Game:
         # Draw Balls
         for ball in self.balls:
             pos = int(ball.body.position.x), int(ball.body.position.y)
-            pygame.draw.circle(self.screen, ball.color, pos, int(ball.shape.radius))
+            c = pygame.Color(ball.color)
+            pygame.gfxdraw.filled_circle(self.screen, pos[0], pos[1], int(ball.shape.radius), c)
+            pygame.gfxdraw.aacircle(self.screen, pos[0], pos[1], int(ball.shape.radius), c)
             
             # Draw HP inside ball
             hp_surf = self.small_font.render(str(int(ball.hp)), True, config.COLOR_TEXT)
@@ -321,11 +324,12 @@ class Game:
 
             # Draw Shadow AOE Halo
             if hasattr(ball, 'aoe_radius'):
-                halo_surf = pygame.Surface((ball.aoe_radius * 2, ball.aoe_radius * 2), pygame.SRCALPHA)
+                r = int(ball.aoe_radius)
+                halo_surf = pygame.Surface((r * 2, r * 2), pygame.SRCALPHA)
                 c = pygame.Color(ball.color)
-                c.a = 40
-                pygame.draw.circle(halo_surf, c, (ball.aoe_radius, ball.aoe_radius), ball.aoe_radius)
-                self.screen.blit(halo_surf, (pos[0] - ball.aoe_radius, pos[1] - ball.aoe_radius))
+                c.a = config.HALO_OPACITY
+                pygame.gfxdraw.filled_circle(halo_surf, r, r, r, c)
+                self.screen.blit(halo_surf, (pos[0] - r, pos[1] - r))
 
             # Draw Weapon (World Space)
             for shape in ball.weapon_shapes:
@@ -336,7 +340,9 @@ class Game:
                     world_verts.append((int(p.x), int(p.y)))
                 
                 weapon_color = config.COLOR_WEAPON_FLASH if ball.flash_timer > 0 else config.COLOR_WEAPON_DEFAULT
-                pygame.draw.polygon(self.screen, weapon_color, world_verts)
+                c = pygame.Color(weapon_color)
+                pygame.gfxdraw.filled_polygon(self.screen, world_verts, c)
+                pygame.gfxdraw.aapolygon(self.screen, world_verts, c)
 
             # Draw Projectiles
             if hasattr(ball, 'projectiles'):
@@ -346,7 +352,9 @@ class Game:
                         # World transform
                         wv = p.body.position + v.rotated(p.body.angle)
                         p_verts.append((int(wv.x), int(wv.y)))
-                    pygame.draw.polygon(self.screen, ball.color, p_verts)
+                    c = pygame.Color(ball.color)
+                    pygame.gfxdraw.filled_polygon(self.screen, p_verts, c)
+                    pygame.gfxdraw.aapolygon(self.screen, p_verts, c)
 
             # Draw Traps
             if hasattr(ball, 'traps'):
@@ -356,7 +364,9 @@ class Game:
                         # World transform
                         wv = t.body.position + v.rotated(t.body.angle)
                         t_verts.append((int(wv.x), int(wv.y)))
-                    pygame.draw.polygon(self.screen, (200, 50, 50), t_verts)
+                    c = pygame.Color(200, 50, 50)
+                    pygame.gfxdraw.filled_polygon(self.screen, t_verts, c)
+                    pygame.gfxdraw.aapolygon(self.screen, t_verts, c)
 
         # Draw UI
         for i, ball in enumerate(self.balls):
