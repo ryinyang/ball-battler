@@ -22,6 +22,7 @@ class Game:
         pygame.display.set_caption(config.CAPTION)
         self.clock = pygame.time.Clock()
         self.font = pygame.font.SysFont(None, 36)
+        self.small_font = pygame.font.Font("assets/impact.ttf", 24)
         self.running = True
         self.bullet_time_timer = 0.0
         self.bullet_time_balls = []
@@ -310,6 +311,11 @@ class Game:
         for ball in self.balls:
             pos = int(ball.body.position.x), int(ball.body.position.y)
             pygame.draw.circle(self.screen, ball.color, pos, int(ball.shape.radius))
+            
+            # Draw HP inside ball
+            hp_surf = self.small_font.render(str(int(ball.hp)), True, config.COLOR_TEXT)
+            hp_rect = hp_surf.get_rect(center=pos)
+            self.screen.blit(hp_surf, hp_rect)
 
             # Draw Shadow AOE Halo
             if hasattr(ball, 'aoe_radius'):
