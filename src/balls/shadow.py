@@ -56,3 +56,6 @@ class Shadow(Ball):
                         damage = self.current_dps
                         print_damage(self, shape.ball, damage)
                         shape.ball.take_damage(damage)
+                        self.aoe_radius *= 1.01
+                        self.current_dps *= 1.1
+    
