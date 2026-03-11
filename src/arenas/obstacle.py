@@ -1,4 +1,5 @@
 import pygame
+import pygame.gfxdraw
 import pymunk
 import src.config as config
 
@@ -32,8 +33,19 @@ class Bumper(Obstacle):
 
     def draw(self, screen):
         pos = int(self.body.position.x), int(self.body.position.y)
-        pygame.draw.circle(screen, self.color, pos, self.radius)
-        pygame.draw.circle(screen, (255, 255, 255), pos, self.radius - 8, 3)
+        r = int(self.radius)
+        c = pygame.Color(self.color)
+        
+        # Main Body
+        pygame.gfxdraw.filled_circle(screen, pos[0], pos[1], r, c)
+        pygame.gfxdraw.aacircle(screen, pos[0], pos[1], r, c)
+        
+        # White Ring details
+        pygame.gfxdraw.filled_circle(screen, pos[0], pos[1], r - 7, (255, 255, 255))
+        pygame.gfxdraw.aacircle(screen, pos[0], pos[1], r - 7, (255, 255, 255))
+        
+        pygame.gfxdraw.filled_circle(screen, pos[0], pos[1], r - 10, c)
+        pygame.gfxdraw.aacircle(screen, pos[0], pos[1], r - 10, c)
 
     def on_collide(self, ball):
         ball.body.velocity = ball.body.velocity * config.BUMPER_SPEED_BOOST

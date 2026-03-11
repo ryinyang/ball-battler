@@ -308,8 +308,24 @@ class Game:
         # Draw Walls
         for shape in self.space.shapes:
             if isinstance(shape, pymunk.Segment):
-                pygame.draw.line(self.screen, config.COLOR_WALL, shape.a, shape.b, int(shape.radius * 2))
-        
+                p1, p2 = shape.a, shape.b
+                radius = int(shape.radius)
+                color = pygame.Color(config.COLOR_WALL)
+                
+                # Draw End caps
+                for p in (p1, p2):
+                    pygame.gfxdraw.filled_circle(self.screen, int(p.x), int(p.y), radius, color)
+                    pygame.gfxdraw.aacircle(self.screen, int(p.x), int(p.y), radius, color)
+                
+                # Draw Body
+                v = p2 - p1
+                if v.length_squared > 0:
+                    nv = v.perpendicular().normalized() * radius
+                    poly_verts = [p1 + nv, p2 + nv, p2 - nv, p1 - nv]
+                    poly_points = [(int(p.x), int(p.y)) for p in poly_verts]
+                    pygame.gfxdraw.filled_polygon(self.screen, poly_points, color)
+                    pygame.gfxdraw.aapolygon(self.screen, poly_points, color)
+
         # Draw Balls
         for ball in self.balls:
             pos = int(ball.body.position.x), int(ball.body.position.y)
