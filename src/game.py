@@ -299,7 +299,9 @@ class Game:
                     halo_surf = pygame.Surface((halo_radius * 2, halo_radius * 2), pygame.SRCALPHA)
                     for r in range(halo_radius, int(ball.shape.radius), -2):
                         
-                        pygame.draw.circle(halo_surf, (*config.COLOR_HIGHLIGHT, config.HALO_OPACITY), (halo_radius, halo_radius), r)
+                        c = pygame.Color(config.COLOR_HIGHLIGHT)
+                        c.a = config.HALO_OPACITY
+                        pygame.draw.circle(halo_surf, c, (halo_radius, halo_radius), r)
                     self.screen.blit(halo_surf, (pos[0] - halo_radius, pos[1] - halo_radius))
 
         # Draw Walls
@@ -320,7 +322,9 @@ class Game:
             # Draw Shadow AOE Halo
             if hasattr(ball, 'aoe_radius'):
                 halo_surf = pygame.Surface((ball.aoe_radius * 2, ball.aoe_radius * 2), pygame.SRCALPHA)
-                pygame.draw.circle(halo_surf, (*ball.color, 40), (ball.aoe_radius, ball.aoe_radius), ball.aoe_radius)
+                c = pygame.Color(ball.color)
+                c.a = 40
+                pygame.draw.circle(halo_surf, c, (ball.aoe_radius, ball.aoe_radius), ball.aoe_radius)
                 self.screen.blit(halo_surf, (pos[0] - ball.aoe_radius, pos[1] - ball.aoe_radius))
 
             # Draw Weapon (World Space)
