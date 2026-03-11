@@ -88,6 +88,10 @@ class Ball:
         """Override for class-specific on-hit logic."""
         pass
 
+    def on_clash(self, target):
+        """Override for class-specific clash logic."""
+        pass
+
     def take_damage(self, amount):
         self.hp -= amount
 

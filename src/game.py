@@ -139,6 +139,10 @@ class Game:
         ball_a.rotation_speed *= -1
         ball_b.rotation_speed *= -1
 
+        # Trigger on_clash
+        ball_a.on_clash(ball_b)
+        ball_b.on_clash(ball_a)
+
         # Knockback
         diff = ball_b.body.position - ball_a.body.position
         if diff.length_squared > 0:
