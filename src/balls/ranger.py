@@ -124,4 +124,4 @@ class Ranger(Ball):
 
     def on_hit(self, target):
         # Ranger Mechanic: Kiting - Speed boost on hit
-        self.speed *= 1.05
+        self.fire_rate *= 0.99
