@@ -140,15 +140,16 @@ class DrawingManager:
                 sin_a = math.sin(ball.weapon_angle)
                 cos_a = math.cos(ball.weapon_angle)
                 
-                world_outline = []
-                for x, y in ball.weapon_outline_vertices:
-                    # Rotate
-                    rx = x * cos_a - y * sin_a
-                    ry = x * sin_a + y * cos_a
-                    # Translate
-                    world_outline.append((pos[0] + rx, pos[1] + ry))
-                
-                pygame.draw.lines(self.screen, config.COLOR_FLASH, True, world_outline, 3)
+                for outline in ball.weapon_outline_vertices:
+                    world_outline = []
+                    for x, y in outline:
+                        # Rotate
+                        rx = x * cos_a - y * sin_a
+                        ry = x * sin_a + y * cos_a
+                        # Translate
+                        world_outline.append((pos[0] + rx, pos[1] + ry))
+                    
+                    pygame.draw.lines(self.screen, config.COLOR_FLASH, True, world_outline, 3)
         else:
             # Draw Polygons (Legacy/Procedural)
             for shape in ball.weapon_shapes:

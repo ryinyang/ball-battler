@@ -92,7 +92,7 @@ class Ball:
         centered_outline = [(p[0] - cx + off.x, p[1] - cy + off.y) for p in outline]
         
         # Store the raw outline for the visual highlight effect
-        self.weapon_outline_vertices = centered_outline
+        self.weapon_outline_vertices = [centered_outline]
         
         # Generate Convex Hull for Physics (Pymunk requires convex shapes)
         hull = self._get_convex_hull(centered_outline)
