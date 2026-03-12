@@ -255,6 +255,10 @@ class Game:
             if anomaly.finished:
                 self.arena.anomalies.remove(anomaly)
 
+        for obstacle in self.arena.obstacles:
+            if hasattr(obstacle, 'update'):
+                obstacle.update(dt)
+
         for ball in self.balls: ball.update(dt)
         self.space.step(dt)
         self._check_deaths()

@@ -17,6 +17,9 @@ class Obstacle:
     def on_collide(self, ball):
         pass
 
+    def update(self, dt):
+        pass
+
 class Bumper(Obstacle):
     def __init__(self, space, x, y):
         super().__init__(space, x, y)
@@ -30,10 +33,14 @@ class Bumper(Obstacle):
         self.shape.filter = pymunk.ShapeFilter(categories=config.CATEGORY_OBSTACLE)
         self.shape.obstacle = self
         self.space.add(self.body, self.shape)
+        
+        self.scale = 1.0
+        self.anim_timer = 0.0
+        self.anim_duration = 0.2
 
     def draw(self, screen):
         pos = int(self.body.position.x), int(self.body.position.y)
-        r = int(self.radius)
+        r = int(self.radius * self.scale)
         c = pygame.Color(self.color)
         
         # Main Body
@@ -49,3 +56,24 @@ class Bumper(Obstacle):
 
     def on_collide(self, ball):
         ball.body.velocity = ball.body.velocity * config.BUMPER_SPEED_BOOST
+        self.anim_timer = self.anim_duration
+
+    def update(self, dt):
+        if self.anim_timer > 0:
+            self.anim_timer -= dt
+            
+            # Normalize time 0.0 -> 1.0
+            t = 1.0 - (max(0, self.anim_timer) / self.anim_duration)
+            
+            # Expand then shrink
+            # 0.0 to 0.5: Expand from 1.0 to 1.3
+            # 0.5 to 1.0: Shrink from 1.3 to 1.0
+            if t < 0.3:
+                progress = t / 0.3
+                self.scale = 1.0 + (0.3 * progress)
+            else:
+                progress = (t - 0.3) / 0.7
+                self.scale = 1.3 - (0.3 * progress)
+        else:
+            self.scale = 1.0
+            self.anim_timer = 0
