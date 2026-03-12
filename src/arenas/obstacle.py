@@ -25,6 +25,7 @@ class Bumper(Obstacle):
         super().__init__(space, x, y)
         self.radius = config.BUMPER_RADIUS
         self.color = config.COLOR_BUMPER
+        self.highlight_color = config.COLOR_BUMPER_HIGHLIGHT
         
         self.shape = pymunk.Circle(self.body, self.radius)
         self.shape.elasticity = config.BUMPER_ELASTICITY
@@ -42,14 +43,15 @@ class Bumper(Obstacle):
         pos = int(self.body.position.x), int(self.body.position.y)
         r = int(self.radius * self.scale)
         c = pygame.Color(self.color)
+        highlight_color = pygame.Color(self.highlight_color)
         
         # Main Body
         pygame.gfxdraw.filled_circle(screen, pos[0], pos[1], r, c)
         pygame.gfxdraw.aacircle(screen, pos[0], pos[1], r, c)
         
         # White Ring details
-        pygame.gfxdraw.filled_circle(screen, pos[0], pos[1], r - 7, (255, 255, 255))
-        pygame.gfxdraw.aacircle(screen, pos[0], pos[1], r - 7, (255, 255, 255))
+        pygame.gfxdraw.filled_circle(screen, pos[0], pos[1], r - 7, highlight_color)
+        pygame.gfxdraw.aacircle(screen, pos[0], pos[1], r - 7, highlight_color)
         
         pygame.gfxdraw.filled_circle(screen, pos[0], pos[1], r - 10, c)
         pygame.gfxdraw.aacircle(screen, pos[0], pos[1], r - 10, c)
