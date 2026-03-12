@@ -1,7 +1,5 @@
-import math
 import random
 import pygame
-import pygame.gfxdraw
 import pymunk
 from src.balls.rogue import Rogue
 from src.balls.berserker import Berserker
@@ -15,6 +13,7 @@ from src.arenas.anomaly import BlackHole
 from src.arenas.obstacle import Bumper
 from src.arenas.item import Potion
 import src.config as config
+from src.drawing_manager import DrawingManager
 
 class Game:
     def __init__(self):
@@ -23,8 +22,6 @@ class Game:
         self.screen = pygame.display.set_mode((self.WIDTH, self.HEIGHT))
         pygame.display.set_caption(config.CAPTION)
         self.clock = pygame.time.Clock()
-        self.font = pygame.font.SysFont(None, 36)
-        self.small_font = pygame.font.Font("assets/impact.ttf", 24)
         self.running = True
         self.bullet_time_timer = 0.0
         self.bullet_time_balls = []
@@ -45,7 +42,9 @@ class Game:
         self.balls = []
         self._populate_arena()
         self._spawn_balls()
-        self.arena_polygon = self._extract_arena_vertices()
+        
+        self.drawing_manager = DrawingManager(self.screen, self.WIDTH, self.HEIGHT)
+        self.drawing_manager.cache_arena_floor(self.space)
 
     def _populate_arena(self):
         # Bumpers in a + shape
@@ -96,22 +95,6 @@ class Game:
         
         new_item = Potion(self.space, x, y)
         self.arena.add_item(new_item)
-
-    def _extract_arena_vertices(self):
-        vertices = set()
-        for shape in self.space.shapes:
-            if isinstance(shape, pymunk.Segment):
-                p1 = (int(shape.a.x), int(shape.a.y))
-                p2 = (int(shape.b.x), int(shape.b.y))
-                vertices.add(p1)
-                vertices.add(p2)
-        
-        if not vertices:
-            return []
-            
-        cx, cy = self.WIDTH / 2, self.HEIGHT / 2
-        # Sort vertices by angle from center to form a proper polygon
-        return sorted(list(vertices), key=lambda p: math.atan2(p[1] - cy, p[0] - cx))
 
     def handle_weapon_hit(self, arbiter, space, data):
         target_shape, weapon_shape = arbiter.shapes
@@ -294,130 +277,4 @@ class Game:
                 print(f"{ball.name} eliminated!")
 
     def draw(self):
-        self.screen.fill(config.COLOR_BG)
-        
-        # Draw Arena Floor
-        if self.arena_polygon:
-            c = pygame.Color(config.COLOR_ARENA_FLOOR)
-            pygame.gfxdraw.filled_polygon(self.screen, self.arena_polygon, c)
-            pygame.gfxdraw.aapolygon(self.screen, self.arena_polygon, c)
-
-        # Draw Obstacles
-        for obstacle in self.arena.obstacles:
-            obstacle.draw(self.screen)
-
-        # Draw Effects
-        for anomaly in self.arena.anomalies:
-            anomaly.draw(self.screen)
-
-        # Draw Items
-        for item in self.arena.items:
-            item.draw(self.screen)
-
-        # Draw Bullet Time Highlights
-        if self.bullet_time_timer > 0:
-            for ball in self.bullet_time_balls:
-                if ball in self.balls:
-                    pos = int(ball.body.position.x), int(ball.body.position.y)
-                    
-                    halo_radius = int(ball.shape.radius) + 40
-                    halo_surf = pygame.Surface((halo_radius * 2, halo_radius * 2), pygame.SRCALPHA)
-                    for r in range(halo_radius, int(ball.shape.radius), -2):
-                        
-                        c = pygame.Color(config.COLOR_HIGHLIGHT)
-                        c.a = config.HALO_OPACITY
-                        pygame.gfxdraw.filled_circle(halo_surf, halo_radius, halo_radius, r, c)
-                    self.screen.blit(halo_surf, (pos[0] - halo_radius, pos[1] - halo_radius))
-
-        # Draw Walls
-        for shape in self.space.shapes:
-            if isinstance(shape, pymunk.Segment):
-                p1, p2 = shape.a, shape.b
-                radius = int(shape.radius)
-                color = pygame.Color(config.COLOR_WALL)
-                
-                # Draw End caps
-                for p in (p1, p2):
-                    pygame.gfxdraw.filled_circle(self.screen, int(p.x), int(p.y), radius, color)
-                    pygame.gfxdraw.aacircle(self.screen, int(p.x), int(p.y), radius, color)
-                
-                # Draw Body
-                v = p2 - p1
-                if v.length_squared > 0:
-                    nv = v.perpendicular().normalized() * radius
-                    poly_verts = [p1 + nv, p2 + nv, p2 - nv, p1 - nv]
-                    poly_points = [(int(p.x), int(p.y)) for p in poly_verts]
-                    pygame.gfxdraw.filled_polygon(self.screen, poly_points, color)
-                    pygame.gfxdraw.aapolygon(self.screen, poly_points, color)
-
-        # Draw Balls
-        for ball in self.balls:
-            pos = int(ball.body.position.x), int(ball.body.position.y)
-            c = pygame.Color(ball.color)
-            pygame.gfxdraw.filled_circle(self.screen, pos[0], pos[1], int(ball.shape.radius), c)
-            pygame.gfxdraw.aacircle(self.screen, pos[0], pos[1], int(ball.shape.radius), c)
-            
-            # Draw HP inside ball
-            hp = max(1, int(ball.hp))
-            hp_surf = self.small_font.render(str(hp), True, config.COLOR_TEXT)
-            hp_rect = hp_surf.get_rect(center=pos)
-            self.screen.blit(hp_surf, hp_rect)
-
-            # Draw Shadow AOE Halo
-            if hasattr(ball, 'aoe_radius'):
-                r = int(ball.aoe_radius)
-                halo_surf = pygame.Surface((r * 2, r * 2), pygame.SRCALPHA)
-                c = pygame.Color(ball.color)
-                c.a = config.HALO_OPACITY
-                pygame.gfxdraw.filled_circle(halo_surf, r, r, r, c)
-                self.screen.blit(halo_surf, (pos[0] - r, pos[1] - r))
-
-            # Draw Weapon (World Space)
-            for shape in ball.weapon_shapes:
-                local_verts = shape.get_vertices()
-                world_verts = []
-                for v in local_verts:
-                    p = ball.body.position + v.rotated(ball.body.angle)
-                    world_verts.append((int(p.x), int(p.y)))
-                
-                weapon_color = config.COLOR_WEAPON_FLASH if ball.flash_timer > 0 else config.COLOR_WEAPON_DEFAULT
-                c = pygame.Color(weapon_color)
-                pygame.gfxdraw.filled_polygon(self.screen, world_verts, c)
-                pygame.gfxdraw.aapolygon(self.screen, world_verts, c)
-
-            # Draw Projectiles
-            if hasattr(ball, 'projectiles'):
-                for p in ball.projectiles:
-                    p_verts = []
-                    for v in p.shape.get_vertices():
-                        # World transform
-                        wv = p.body.position + v.rotated(p.body.angle)
-                        p_verts.append((int(wv.x), int(wv.y)))
-                    c = pygame.Color(ball.color)
-                    pygame.gfxdraw.filled_polygon(self.screen, p_verts, c)
-                    pygame.gfxdraw.aapolygon(self.screen, p_verts, c)
-
-            # Draw Traps
-            if hasattr(ball, 'traps'):
-                for t in ball.traps:
-                    t_verts = []
-                    for v in t.shape.get_vertices():
-                        # World transform
-                        wv = t.body.position + v.rotated(t.body.angle)
-                        t_verts.append((int(wv.x), int(wv.y)))
-                    c = pygame.Color(200, 50, 50)
-                    pygame.gfxdraw.filled_polygon(self.screen, t_verts, c)
-                    pygame.gfxdraw.aapolygon(self.screen, t_verts, c)
-
-        # Draw UI
-        for i, ball in enumerate(self.balls):
-            velocity_magnitude = int(ball.body.velocity.length)
-            text_surf = self.font.render(f"{ball.name}: HP {int(ball.hp)} | Vel: {velocity_magnitude}", True, config.COLOR_TEXT)
-            if i % 2 == 0:
-                self.screen.blit(text_surf, (20, 20 + (i // 2) * 30))
-            else:
-                rect = text_surf.get_rect()
-                rect.topright = (self.WIDTH - 20, 20 + (i // 2) * 30)
-                self.screen.blit(text_surf, rect)
-
-        pygame.display.flip()
+        self.drawing_manager.draw(self.space, self.arena, self.balls, self.bullet_time_timer, self.bullet_time_balls)
