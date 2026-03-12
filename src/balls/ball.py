@@ -1,4 +1,5 @@
 import math
+import pygame
 import pymunk
 import src.config as config
 from src.utilities import print_damage
@@ -33,6 +34,8 @@ class Ball:
         self.weapon_angle = 0.0
         self.rotation_speed = 5.0 
         self.weapon_shapes = []
+        self.weapon_image = None
+        self.weapon_outline_vertices = []
         self.weapon_base_vertices = []
         self._setup_weapon(space)
 
@@ -57,6 +60,59 @@ class Ball:
             shape.ball = self
             space.add(shape)
             self.weapon_shapes.append(shape)
+
+    def create_weapon_from_image(self, space, image_path):
+        """Loads an image, generates a hitbox from non-transparent pixels, and sets up the weapon."""
+        try:
+            surface = pygame.image.load(image_path).convert_alpha()
+        except Exception as e:
+            print(f"Failed to load weapon image {image_path}: {e}")
+            return
+
+        self.weapon_image = surface
+        
+        # Generate mask and outline from non-transparent pixels
+        mask = pygame.mask.from_surface(surface)
+        outline = mask.outline(every=2) # Get outline points, skipping every 2nd for performance
+        
+        if not outline:
+            return
+
+        # Center the outline vertices relative to the image
+        w, h = surface.get_size()
+        cx, cy = w / 2, h / 2
+        centered_outline = [(p[0] - cx, p[1] - cy) for p in outline]
+        
+        # Store the raw outline for the visual highlight effect
+        self.weapon_outline_vertices = centered_outline
+        
+        # Generate Convex Hull for Physics (Pymunk requires convex shapes)
+        hull = self._get_convex_hull(centered_outline)
+        self.weapon_base_vertices = [hull]
+        
+        self._create_weapon_shapes(space)
+
+    def _get_convex_hull(self, points):
+        """Computes the convex hull of a set of points using Monotone Chain algorithm."""
+        points = sorted(set(points))
+        if len(points) <= 1: return points
+
+        def cross(o, a, b):
+            return (a[0] - o[0]) * (b[1] - o[1]) - (a[1] - o[1]) * (b[0] - o[0])
+
+        lower = []
+        for p in points:
+            while len(lower) >= 2 and cross(lower[-2], lower[-1], p) <= 0:
+                lower.pop()
+            lower.append(p)
+
+        upper = []
+        for p in reversed(points):
+            while len(upper) >= 2 and cross(upper[-2], upper[-1], p) <= 0:
+                upper.pop()
+            upper.append(p)
+
+        return lower[:-1] + upper[:-1]
 
     def update(self, dt):
         if self.flash_timer > 0:

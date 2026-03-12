@@ -122,17 +122,41 @@ class DrawingManager:
             self.screen.blit(halo_surf, (pos[0] - r, pos[1] - r))
 
         # Weapons
-        for shape in ball.weapon_shapes:
-            local_verts = shape.get_vertices()
-            world_verts = [(int((ball.body.position + v.rotated(ball.body.angle)).x), int((ball.body.position + v.rotated(ball.body.angle)).y)) for v in local_verts]
+        if hasattr(ball, 'weapon_image') and ball.weapon_image:
+            # Draw Sprite
+            angle_deg = -math.degrees(ball.weapon_angle)
+            rot_img = pygame.transform.rotate(ball.weapon_image, angle_deg)
+            rect = rot_img.get_rect(center=pos)
+            self.screen.blit(rot_img, rect)
             
-            c = pygame.Color(config.COLOR_WEAPON_DEFAULT)
-            pygame.gfxdraw.filled_polygon(self.screen, world_verts, c)
-            pygame.gfxdraw.aapolygon(self.screen, world_verts, c)
-            
-            # White Outline Flash
-            if ball.weapon_flash_timer > 0:
-                pygame.draw.lines(self.screen, config.COLOR_FLASH, True, world_verts, 3)
+            # Draw Sprite Outline Highlight
+            if ball.weapon_flash_timer > 0 and hasattr(ball, 'weapon_outline_vertices'):
+                # Transform outline points to world space
+                sin_a = math.sin(ball.weapon_angle)
+                cos_a = math.cos(ball.weapon_angle)
+                
+                world_outline = []
+                for x, y in ball.weapon_outline_vertices:
+                    # Rotate
+                    rx = x * cos_a - y * sin_a
+                    ry = x * sin_a + y * cos_a
+                    # Translate
+                    world_outline.append((pos[0] + rx, pos[1] + ry))
+                
+                pygame.draw.lines(self.screen, config.COLOR_FLASH, True, world_outline, 3)
+        else:
+            # Draw Polygons (Legacy/Procedural)
+            for shape in ball.weapon_shapes:
+                local_verts = shape.get_vertices()
+                world_verts = [(int((ball.body.position + v.rotated(ball.body.angle)).x), int((ball.body.position + v.rotated(ball.body.angle)).y)) for v in local_verts]
+                
+                c = pygame.Color(config.COLOR_WEAPON_DEFAULT)
+                pygame.gfxdraw.filled_polygon(self.screen, world_verts, c)
+                pygame.gfxdraw.aapolygon(self.screen, world_verts, c)
+                
+                # White Outline Flash
+                if ball.weapon_flash_timer > 0:
+                    pygame.draw.lines(self.screen, config.COLOR_FLASH, True, world_verts, 3)
 
         # Projectiles
         if hasattr(ball, 'projectiles'):
