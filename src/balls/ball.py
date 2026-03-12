@@ -26,6 +26,7 @@ class Ball:
         self.attack_speed = 1.0
         self.speed = 500
         self.flash_timer = 0.0
+        self.weapon_flash_timer = 0.0
         self.stun_timer = 0.0
 
         # Weapon Setup
@@ -58,6 +59,12 @@ class Ball:
             self.weapon_shapes.append(shape)
 
     def update(self, dt):
+        if self.flash_timer > 0:
+            self.flash_timer -= dt
+
+        if self.weapon_flash_timer > 0:
+            self.weapon_flash_timer -= dt
+
         if self.stun_timer > 0:
             self.stun_timer -= dt
             self.body.velocity = pymunk.Vec2d(0, 0)
@@ -66,9 +73,6 @@ class Ball:
         # Clamp velocity to prevent tunneling
         if self.body.velocity.length > config.BALL_MAX_SPEED:
             self.body.velocity = self.body.velocity.normalized() * config.BALL_MAX_SPEED
-
-        if self.flash_timer > 0:
-            self.flash_timer -= dt
 
         # Update weapon angle
         self.weapon_angle += self.rotation_speed * dt
@@ -106,7 +110,8 @@ class Ball:
         print_damage(self, target, damage)
         target.take_damage(damage)
         self.on_hit(target)
-        self.flash_timer = config.BALL_FLASH_DURATION
+        target.flash_timer = config.BALL_FLASH_DURATION
+        self.weapon_flash_timer = config.BALL_FLASH_DURATION
 
         is_projectile = hasattr(weapon_shape, 'projectile')
 

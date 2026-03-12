@@ -59,6 +59,7 @@ class Trap:
     def trigger(self, target):
         print(f"{self.owner.name}'s Trap hit {target.name}!")
         target.take_damage(config.RANGER_TRAP_DAMAGE)
+        target.flash_timer = config.BALL_FLASH_DURATION
         target.stun_timer = config.RANGER_TRAP_STUN_DURATION
         self.destroy()
         if self in self.owner.traps:

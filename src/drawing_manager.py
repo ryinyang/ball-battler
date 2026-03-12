@@ -99,14 +99,16 @@ class DrawingManager:
         pos = int(ball.body.position.x), int(ball.body.position.y)
         
         # Body (Flash White on Hit)
-        color = (255, 255, 255) if ball.flash_timer > 0 else ball.color
+        color = config.COLOR_FLASH if ball.flash_timer > 0 else ball.color
         c = pygame.Color(color)
         pygame.gfxdraw.filled_circle(self.screen, pos[0], pos[1], int(ball.shape.radius), c)
         pygame.gfxdraw.aacircle(self.screen, pos[0], pos[1], int(ball.shape.radius), c)
         
         # HP Text
         hp = max(1, int(ball.hp))
-        hp_surf = self.small_font.render(str(hp), True, config.COLOR_TEXT)
+        # Invert color when flashing for better visibility
+        text_color = config.COLOR_BG if ball.flash_timer > 0 else config.COLOR_TEXT
+        hp_surf = self.small_font.render(str(hp), True, text_color)
         hp_rect = hp_surf.get_rect(center=pos)
         self.screen.blit(hp_surf, hp_rect)
 
@@ -129,8 +131,8 @@ class DrawingManager:
             pygame.gfxdraw.aapolygon(self.screen, world_verts, c)
             
             # White Outline Flash
-            if ball.flash_timer > 0:
-                pygame.draw.lines(self.screen, (255, 255, 255), True, world_verts, 3)
+            if ball.weapon_flash_timer > 0:
+                pygame.draw.lines(self.screen, config.COLOR_FLASH, True, world_verts, 3)
 
         # Projectiles
         if hasattr(ball, 'projectiles'):
