@@ -61,15 +61,22 @@ class Ball:
             space.add(shape)
             self.weapon_shapes.append(shape)
 
-    def create_weapon_from_image(self, space, image_path):
+    def create_weapon_from_image(self, space, image_path, max_size=None, offset=None, rotation=0):
         """Loads an image, generates a hitbox from non-transparent pixels, and sets up the weapon."""
         try:
             surface = pygame.image.load(image_path).convert_alpha()
+            if rotation != 0:
+                surface = pygame.transform.rotate(surface, rotation)
+            if max_size:
+                scale = max_size / max(surface.get_width(), surface.get_height())
+                new_size = (int(surface.get_width() * scale), int(surface.get_height() * scale))
+                surface = pygame.transform.scale(surface, new_size)
         except Exception as e:
             print(f"Failed to load weapon image {image_path}: {e}")
             return
 
         self.weapon_image = surface
+        self.weapon_image_offset = pymunk.Vec2d(*offset) if offset else pymunk.Vec2d(0, 0)
         
         # Generate mask and outline from non-transparent pixels
         mask = pygame.mask.from_surface(surface)
@@ -78,10 +85,11 @@ class Ball:
         if not outline:
             return
 
-        # Center the outline vertices relative to the image
+        # Center the outline vertices relative to the image and apply offset
         w, h = surface.get_size()
         cx, cy = w / 2, h / 2
-        centered_outline = [(p[0] - cx, p[1] - cy) for p in outline]
+        off = self.weapon_image_offset
+        centered_outline = [(p[0] - cx + off.x, p[1] - cy + off.y) for p in outline]
         
         # Store the raw outline for the visual highlight effect
         self.weapon_outline_vertices = centered_outline

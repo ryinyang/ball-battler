@@ -126,7 +126,12 @@ class DrawingManager:
             # Draw Sprite
             angle_deg = -math.degrees(ball.weapon_angle)
             rot_img = pygame.transform.rotate(ball.weapon_image, angle_deg)
-            rect = rot_img.get_rect(center=pos)
+            
+            offset = getattr(ball, 'weapon_image_offset', pymunk.Vec2d(0, 0))
+            rot_offset = offset.rotated(ball.weapon_angle)
+            draw_pos = ball.body.position + rot_offset
+            
+            rect = rot_img.get_rect(center=(int(draw_pos.x), int(draw_pos.y)))
             self.screen.blit(rot_img, rect)
             
             # Draw Sprite Outline Highlight
