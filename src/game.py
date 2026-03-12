@@ -1,3 +1,4 @@
+import math
 import random
 import pygame
 import pygame.gfxdraw
@@ -44,6 +45,7 @@ class Game:
         self.balls = []
         self._populate_arena()
         self._spawn_balls()
+        self.arena_polygon = self._extract_arena_vertices()
 
     def _populate_arena(self):
         # Bumpers in a + shape
@@ -54,7 +56,7 @@ class Game:
         self.arena.add_obstacle(Bumper(self.space, w / 2, h / 2 + 150))
         
         # Black Hole
-        self.arena.add_anomaly(BlackHole(self.space, w / 2, h / 2))
+        # self.arena.add_anomaly(BlackHole(self.space, w / 2, h / 2))
 
     def _spawn_balls(self):
         offset = 150
@@ -94,6 +96,22 @@ class Game:
         
         new_item = Potion(self.space, x, y)
         self.arena.add_item(new_item)
+
+    def _extract_arena_vertices(self):
+        vertices = set()
+        for shape in self.space.shapes:
+            if isinstance(shape, pymunk.Segment):
+                p1 = (int(shape.a.x), int(shape.a.y))
+                p2 = (int(shape.b.x), int(shape.b.y))
+                vertices.add(p1)
+                vertices.add(p2)
+        
+        if not vertices:
+            return []
+            
+        cx, cy = self.WIDTH / 2, self.HEIGHT / 2
+        # Sort vertices by angle from center to form a proper polygon
+        return sorted(list(vertices), key=lambda p: math.atan2(p[1] - cy, p[0] - cx))
 
     def handle_weapon_hit(self, arbiter, space, data):
         target_shape, weapon_shape = arbiter.shapes
@@ -278,6 +296,12 @@ class Game:
     def draw(self):
         self.screen.fill(config.COLOR_BG)
         
+        # Draw Arena Floor
+        if self.arena_polygon:
+            c = pygame.Color(config.COLOR_ARENA_FLOOR)
+            pygame.gfxdraw.filled_polygon(self.screen, self.arena_polygon, c)
+            pygame.gfxdraw.aapolygon(self.screen, self.arena_polygon, c)
+
         # Draw Obstacles
         for obstacle in self.arena.obstacles:
             obstacle.draw(self.screen)
@@ -334,7 +358,8 @@ class Game:
             pygame.gfxdraw.aacircle(self.screen, pos[0], pos[1], int(ball.shape.radius), c)
             
             # Draw HP inside ball
-            hp_surf = self.small_font.render(str(int(ball.hp)), True, config.COLOR_TEXT)
+            hp = max(1, int(ball.hp))
+            hp_surf = self.small_font.render(str(hp), True, config.COLOR_TEXT)
             hp_rect = hp_surf.get_rect(center=pos)
             self.screen.blit(hp_surf, hp_rect)
 

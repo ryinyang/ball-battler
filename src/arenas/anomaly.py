@@ -69,13 +69,13 @@ class BlackHole(Anomaly):
         pos = (int(self.current_x), int(self.current_y))
         
         # Outer Border
-        r = config.BLACK_HOLE_RADIUS + 8
+        r = config.BLACK_HOLE_RADIUS + 12
         c = pygame.Color(self.outer_border_color)
         pygame.gfxdraw.filled_circle(screen, pos[0], pos[1], r, c)
         pygame.gfxdraw.aacircle(screen, pos[0], pos[1], r, c)
 
         # Middle Border
-        r = config.BLACK_HOLE_RADIUS + 4
+        r = config.BLACK_HOLE_RADIUS + 6
         c = pygame.Color(self.border_color)
         pygame.gfxdraw.filled_circle(screen, pos[0], pos[1], r, c)
         pygame.gfxdraw.aacircle(screen, pos[0], pos[1], r, c)

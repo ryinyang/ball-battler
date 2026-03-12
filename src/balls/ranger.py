@@ -7,15 +7,15 @@ class Arrow:
     def __init__(self, x, y, angle, space, owner):
         self.owner = owner
         self.space = space
-        self.lifetime = 1.5
+        self.lifetime = config.RANGER_ARROW_LIFETIME
 
-        mass = 0.05
-        size = (30, 5)
+        mass = config.RANGER_ARROW_MASS
+        size = config.RANGER_ARROW_SIZE
         moment = pymunk.moment_for_box(mass, size)
         self.body = pymunk.Body(mass, moment)
         self.body.position = (x, y)
         self.body.angle = angle
-        speed = 800
+        speed = config.RANGER_ARROW_SPEED
         self.body.velocity = (math.cos(angle) * speed, math.sin(angle) * speed)
 
         self.shape = pymunk.Poly.create_box(self.body, size)
@@ -42,7 +42,7 @@ class Trap:
         self.body = pymunk.Body(body_type=pymunk.Body.STATIC)
         self.body.position = (x, y)
         
-        size = 20
+        size = config.RANGER_TRAP_SIZE
         self.shape = pymunk.Poly.create_box(self.body, (size, size))
         self.shape.sensor = True
         self.shape.collision_type = config.COLLISION_TYPE_WEAPON
@@ -58,24 +58,24 @@ class Trap:
 
     def trigger(self, target):
         print(f"{self.owner.name}'s Trap hit {target.name}!")
-        target.take_damage(5)
-        target.stun_timer = 1.0
+        target.take_damage(config.RANGER_TRAP_DAMAGE)
+        target.stun_timer = config.RANGER_TRAP_STUN_DURATION
         self.destroy()
         if self in self.owner.traps:
             self.owner.traps.remove(self)
 
 class Ranger(Ball):
     def __init__(self, x, y, space, name="Ranger", radius=config.BALL_RADIUS):
-        super().__init__(x, y, space, name, color=(34, 139, 34), radius=radius)
+        super().__init__(x, y, space, name, color=config.COLOR_RANGER, radius=radius)
         self.projectiles = []
         self.traps = []
-        self.fire_rate = 0.1
+        self.fire_rate = config.RANGER_FIRE_RATE
         self.fire_timer = 0.0
-        self.trap_cooldown = 3.0
+        self.trap_cooldown = config.RANGER_TRAP_COOLDOWN
         self.trap_timer = 0.0
-        self.attack = 12
-        self.speed = 400
-        self.rotation_speed = 3.0
+        self.attack = config.RANGER_ATTACK
+        self.speed = config.RANGER_SPEED
+        self.rotation_speed = config.RANGER_ROTATION_SPEED
         self.space = space
 
     def _setup_weapon(self, space):
