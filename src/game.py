@@ -14,6 +14,7 @@ from src.arenas.obstacle import Bumper
 from src.arenas.item import Potion
 import src.config as config
 from src.drawing_manager import DrawingManager
+from src.sound_manager import SoundManager
 
 class Game:
     def __init__(self):
@@ -36,6 +37,10 @@ class Game:
         h_clash = self.space.on_collision(config.COLLISION_TYPE_WEAPON, config.COLLISION_TYPE_WEAPON, begin=self.handle_weapon_clash)
         h_obstacle = self.space.on_collision(config.COLLISION_TYPE_BALL, config.COLLISION_TYPE_OBSTACLE, begin=self.handle_obstacle_hit)
         h_item = self.space.on_collision(config.COLLISION_TYPE_BALL, config.COLLISION_TYPE_ITEM, begin=self.handle_item_pickup)
+        h_ball = self.space.on_collision(config.COLLISION_TYPE_BALL, config.COLLISION_TYPE_BALL, begin=self.handle_ball_collision)
+
+        # Use wall type from config if available, otherwise default to 0 (default static body type)
+        h_wall = self.space.on_collision(config.COLLISION_TYPE_BALL, config.COLLISION_TYPE_WALL, begin=self.handle_wall_collision)
 
         # Game Objects
         self.arena = OctagonArena(self.space, self.WIDTH, self.HEIGHT)
@@ -45,6 +50,7 @@ class Game:
         
         self.drawing_manager = DrawingManager(self.screen, self.WIDTH, self.HEIGHT)
         self.drawing_manager.cache_arena_floor(self.space)
+        self.sound_manager = SoundManager()
 
     def _populate_arena(self):
         # Bumpers in a + shape
@@ -102,6 +108,7 @@ class Game:
             return False
 
         # Delegate combat logic to the attacker Ball
+        self.sound_manager.play_hit()
         attacker.deal_hit(target, weapon_shape)
         
         self.bullet_time_timer = config.BULLET_TIME_DURATION
@@ -116,6 +123,8 @@ class Game:
 
         if ball_a == ball_b:
             return False
+
+        self.sound_manager.play_clash()
 
         # Handle projectile clash
         is_proj_a = hasattr(shape_a, 'projectile')
@@ -173,6 +182,14 @@ class Game:
 
         space.add_post_step_callback(remove_item_callback, item, self.arena.items)
         return False # It's a sensor, no physical response needed
+
+    def handle_ball_collision(self, arbiter, space, data):
+        self.sound_manager.play_ball_collision()
+        return True
+
+    def handle_wall_collision(self, arbiter, space, data):
+        self.sound_manager.play_wall_collision()
+        return True
 
     def check_proximity_bullet_time(self):
         # If a hit event is currently active (long timer), don't interfere
