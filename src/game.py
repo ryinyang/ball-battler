@@ -63,9 +63,6 @@ class Game:
         b1 = Rogue(offset, offset, self.space, "Rogue")
         b1.body.velocity = (200, 200)
         
-        b2 = Berserker(self.WIDTH - offset, offset, self.space, "Berserker")
-        b2.body.velocity = (-200, 200)
-
         b3 = Paladin(offset, self.HEIGHT - offset, self.space, "Paladin")
         b3.body.velocity = (200, -200)
 
@@ -81,7 +78,7 @@ class Game:
         b7 = Shadow(self.WIDTH / 2, self.HEIGHT / 2 + 100, self.space, "Shadow")
         b7.body.velocity = (100, -100)
         
-        self.balls = [b1, b2, b3, b4, b5, b6, b7]
+        self.balls = [b1, b3, b4, b5, b6, b7]
 
     def _spawn_item(self):
         # Don't spawn items if there are too many
