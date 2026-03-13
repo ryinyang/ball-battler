@@ -36,6 +36,9 @@ class Shadow(Ball):
         # Shadow does not deal damage via weapon hits (hands are for blocking/pushing)
         return False
 
+    def on_clash(self, target):
+        self.current_dps = config.SHADOW_BASE_DPS
+
     def update(self, dt):
         # Lock weapon angle to body angle so hands rotate with the character (shield-like)
         self.weapon_angle = self.body.angle
