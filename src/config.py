@@ -4,7 +4,7 @@ import src.palette as palette
 SCREEN_WIDTH = 800
 SCREEN_HEIGHT = 800
 FPS = 60
-CAPTION = "Ball Battler - Phase 5"
+CAPTION = "Ball Battler - Phase 8"
 
 # Physics
 GRAVITY = (0, 400)

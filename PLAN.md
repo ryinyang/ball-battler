@@ -146,49 +146,76 @@ Misc Changes:
 
 Make the simulation readable and satisfying to watch.
 
-Classes
-- New classes
-    - Warrior: uses a single sword
-    - Monk: uses 2 fists
-    - Tank: uses a shield
-    - Ranger: uses bow and arrows
+### Classes
+- Replace the classes we have with these new ones
+    - [x] Warrior: uses a single sword
+    - [x] Monk: uses 2 fists
+    - [x] Paladin: uses a shield
+    - [x] Ranger: uses bow and arrows. Lays traps that temporarily stuns balls and holds them in place and deals some damage.
+    - [x] Shadow: deals AOE damage over time. Damage scales with time. Hands rotate very slowly. If hands are hot, reduce damage. 
+    - [x] Refactor classes into separate files
+        - [x] 'projectile' and 'trap' should probably be enums and maybe consider creating their own class
+- [ ] What if Rogue has a main attack and also a counter attack when its weapon connects with another weapon? Deal 50% damage back to Attacker?
 
-Combat
-- Add unique scaling for each class type.
+### Combat
+- [x] Add unique scaling for each class type
+    - [x] Warrior: each hit increases damage
+    - [x] Monk: each hit increases speed
+    - [x] Paladin: each time the shield hits another weapon, increase width and damage by 0.5
+    - [x] Ranger: each hit increase fire rate
+    - [x] Shadow: each successful hit increases DPS
 
-UI
-- Health Display on Balls: Show the current HP on the ball itself as well
+### UI
+- [x] Health Display on Balls: Show the current HP on the ball itself as well
+- Misc:
+    - [x] Update background and wall color
+    - [x] Add a color palette
+    - [x] Anti-aliasing?
 - Visual Feedback: 
-    - Attack Feedback: Briefly flash the ball white when it takes damage, or add a small colored particle effect when a class scales its stat.
-    - Bumper Feedback
-    - Bouncy Wall Feedback
-- Match State: Add text to display the winner when only one class/team remains, and a keybind to reset the arena.
+    - [x] Add Visual Attack Feedback: 
+        - [x] Briefly flash the ball white when it takes damage
+        - [x] Instead of changing the weapon color to white, flash a momentary white outline around the weapon
+    - [ ] When Shadow hits a target, draw a purple string/lightning bolt from Shadow to all targets. As the Shadow AOE attack timer winds down, make the link thicker.
+    - [x] Bumper Feedback
+    - [ ] Bouncy Wall Feedback
 - Pixel Art: Add pixel art for each weapon type using OpenMoji and PixelIt
+    - [x] Warrior: uses a single sword
+    - [x] Rogue: uses 2 smaller daggers
+    - [x] Monk: uses a hand and a fist
+    - [x] Paladin: uses a shield
+    - [x] Ranger: uses bow and arrows
+    - [x] Shadow: praying hands
+    - [x] Refactor/clean up
+    - [x] Revisit Paladin's scaling mechanic
 - Sounds
-    - Weapon on Weapon CLANG
-    - Weapon on Ball OOF
+    - [ ] Weapon on Weapon: CLANG
+    - [ ] Weapon on Ball: hit marker sound
+    - [ ] Ball on Wall: ASMR clink sound
+- Even more polish:
+    - [ ] Use [Chromatic Aberration effect](https://en.wikipedia.org/wiki/Chromatic_aberration) to accentuate collisions (ball v wall, ball v ball, ball v weapon, weapon v weapon)
+        - Might need to change color palette to make it work
 
-UX
-- Customizable Frame Rate
+### UX
+- [ ] Customizable Frame Rate
 - Octagon Arena:
-    - Add some visual indicator that the bottom wall accelerates the ball
-- Post Battle Screen (Metrics):
+    - [ ] Add some visual indicator that the bottom wall accelerates the ball
+- [ ] Battle Summary (Metrics):
     - Who won?
     - How much damage did each ball do?
     - What was the average speed of each ball?
     - Superlatives
         - Most damage, highest speed, most hits
-- Build your own battlers
+- [ ] Build your own battlers
     - Select base, weapon, class? Would probably require a full refactor of the data models/classes.
 
-Arenas
-- New Arena: Wrestling Ring
-    - The walls of this Arena are elastic, like the a Wrestling Ring
-    - Bouncing on the wall will 
-        - Start Bullet Time
-        - Aim the ball directly towards a target ball
-    - For balance reasons, the wall should have some cooldown time or maybe switch to a different wall
-    - Balance Idea: Bottom wall is bouncy while top wall aims directly to the target ball
+### Arenas
+- [ ] New Arena: Wrestling Ring
+    - [ ] The walls of this Arena are elastic, like the a Wrestling Ring
+    - [ ] Bouncing on the wall will 
+        - [ ] Start Bullet Time
+        - [ ] Aim the ball directly towards a target ball
+    - [ ] For balance reasons, the wall should have some cooldown time or maybe switch to a different wall
+    - [ ] Balance Idea: Bottom wall is bouncy while top wall aims directly to the target ball
 
 ## Phase 9: Machine Learning
 
@@ -212,6 +239,8 @@ Refactor the code to clean everything up. Add tests to ensure features are built
 - Modular
 - main.py
     - Separate physics, drawing, and logic
+    - Refactor the collision handling into a dedicated CollisionManager class to keep main logic clean
+    - [x] Refactor the drawing logic into a dedicated DrawingManager class to keep main game logic clean
 - Pytest
     - Layer A: Logic & Physics (Headless): This is where you test Pymunk. You don’t need a Pygame window to open for this.
         - What to test: Does a ball fall at the correct rate? Do two objects trigger a collision callback?
@@ -222,3 +251,8 @@ Refactor the code to clean everything up. Add tests to ensure features are built
     - Layer C: Rendering (Visual Regression)
         - What to test: Is the player sprite actually being drawn at the physics body's coordinates?
         - How: You can use "Snapshot Testing." Save a "golden" image of a frame and compare the pixel data of your current Surface against it using pygame.image.tostring().
+
+New Game Modes
+- teams with tank, dps, support
+- team vs boss
+    - select a team of X balls to deal Y damage to a large boss ball
