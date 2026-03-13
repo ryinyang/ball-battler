@@ -15,23 +15,22 @@ class Shadow(Ball):
 
     def _setup_weapon(self, space):
         # Attempt to load sprite
-        self.create_weapon_from_image(space, "assets/prayer_hands.png", max_size=self.radius, offset=(self.radius * 1.5, 0), rotation=-90)
+        self.weapon.load_sprite("assets/prayer_hands.png", max_size=self.radius, offset=(self.radius * 1.5, 0), rotation=-90)
 
-        if not self.weapon_shapes:
+        if not self.weapon.shapes:
             # Clasped hands: A Square held in front
             size = 24
             r = self.radius
             offset = r + size / 2
             
-            # Square vertices centered at (offset, 0)
-            half = size / 2
-            self.weapon_base_vertices = [[
-                (offset - half, -half),
-                (offset + half, -half),
-                (offset + half, half),
-                (offset - half, half)
+            # Square vertices
+            self.weapon.base_vertices = [[
+                (offset - 12, -12),
+                (offset + 12, -12),
+                (offset + 12, 12),
+                (offset - 12, 12)
             ]]
-            self._create_weapon_shapes(space)
+            self.weapon.create_shapes()
 
     def deal_hit(self, target, weapon_shape):
         # Shadow does not deal damage via weapon hits (hands are for blocking/pushing)

@@ -28,36 +28,16 @@ class Rogue(Ball):
         # Rotate 135 degrees to point outwards (Right)
         dagger = pygame.transform.rotate(dagger, 135)
         
-        # Create Composite Surface for 2 Parallel Daggers
         w, h = dagger.get_size()
         gap = -20
-        total_w, total_h = w, h * 2 + gap
         
-        composite = pygame.Surface((total_w, total_h), pygame.SRCALPHA)
-        composite.blit(dagger, (0, 0))          # Top Dagger
-        composite.blit(dagger, (0, h + gap))    # Bottom Dagger
+        # Positions relative to ball center
+        x_offset = self.radius + w/2
         
-        self.weapon_image = composite
-        
-        # Offset calculation to position daggers at the edge of the ball
-        cx, cy = total_w / 2, total_h / 2
-        self.weapon_image_offset = pymunk.Vec2d(self.radius + cx, 0)
-        
-        # Generate Manual Physics Shapes and Outlines
-        mask = pygame.mask.from_surface(dagger)
-        outline = mask.outline(every=2)
-        
-        # Create shifted outlines for each dagger relative to the final composite center
-        # Offset = (Relative Pos on Composite) - (Composite Center) + (Global Offset)
-        offset_1 = pymunk.Vec2d(0, 0) - pymunk.Vec2d(cx, cy) + self.weapon_image_offset
-        offset_2 = pymunk.Vec2d(0, h + gap) - pymunk.Vec2d(cx, cy) + self.weapon_image_offset
-        
-        outline1 = [(p[0] + offset_1.x, p[1] + offset_1.y) for p in outline]
-        outline2 = [(p[0] + offset_2.x, p[1] + offset_2.y) for p in outline]
-        
-        self.weapon_outline_vertices = [outline1, outline2]
-        self.weapon_base_vertices = [self._get_convex_hull(outline1), self._get_convex_hull(outline2)]
-        self._create_weapon_shapes(space)
+        self.weapon.build_composite([
+            (dagger, (x_offset, -h/2 - gap/2)), # Top
+            (dagger, (x_offset, h/2 + gap/2))   # Bottom
+        ])
 
     def on_hit(self, target):
         # Rogue Mechanic: Reset angle slightly to allow "double taps" or rapid stabs

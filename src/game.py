@@ -273,7 +273,8 @@ class Game:
                         t.destroy()
                     ball.traps.clear()
 
-                self.space.remove(ball.body, ball.shape, *ball.weapon_shapes)
+                self.space.remove(ball.body, ball.shape)
+                ball.weapon.cleanup()
                 self.balls.remove(ball)
                 print(f"{ball.name} eliminated!")
 

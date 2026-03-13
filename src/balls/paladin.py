@@ -11,14 +11,14 @@ class Paladin(Ball):
 
     def _setup_weapon(self, space):
         # Attempt to load sprite
-        self.create_weapon_from_image(space, "assets/shield.png", max_size=self.radius * 2.5, offset=(self.radius, 0))
+        self.weapon.load_sprite("assets/shield.png", max_size=self.radius * 2.5, offset=(self.radius, 0))
         
-        if not self.weapon_shapes:
+        if not self.weapon.shapes:
             # Hammer: Thick and heavy
             w, l = config.PALADIN_WEAPON_DIMS
             r = self.radius
-            self.weapon_base_vertices = [[(r, -w/2), (r+l, -w/2), (r+l, w/2), (r, w/2)]]
-            self._create_weapon_shapes(space)
+            self.weapon.base_vertices = [[(r, -w/2), (r+l, -w/2), (r+l, w/2), (r, w/2)]]
+            self.weapon.create_shapes()
 
     def on_hit(self, target):
         pass

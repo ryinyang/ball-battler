@@ -11,9 +11,9 @@ class Warrior(Ball):
 
     def _setup_weapon(self, space):
         # Attempt to load sprite
-        self.create_weapon_from_image(space, "assets/dagger.png", max_size=self.radius * 3, offset=(self.radius*2, 0), rotation=135)
+        self.weapon.load_sprite("assets/dagger.png", max_size=self.radius * 3, offset=(self.radius*2, 0), rotation=135)
         
-        if not self.weapon_shapes:
+        if not self.weapon.shapes:
             # Sword: Blade + Crossguard
             w, l = config.WARRIOR_WEAPON_DIMS
             r = self.radius
@@ -26,8 +26,8 @@ class Warrior(Ball):
             guard_l = 10
             guard = [(r, -guard_w/2), (r+guard_l, -guard_w/2), (r+guard_l, guard_w/2), (r, guard_w/2)]
             
-            self.weapon_base_vertices = [blade, guard]
-            self._create_weapon_shapes(space)
+            self.weapon.base_vertices = [blade, guard]
+            self.weapon.create_shapes()
 
     def on_hit(self, target):
         # Warrior Mechanic: Battle Hardened - Increase attack on hit
