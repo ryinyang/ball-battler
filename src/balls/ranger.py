@@ -80,10 +80,14 @@ class Ranger(Ball):
         self.space = space
 
     def _setup_weapon(self, space):
-        w, l = 5, 40
-        r = self.radius
-        self.weapon_base_vertices = [[(r, -l/2), (r+w, -l/2), (r+w, l/2), (r, l/2)]]
-        self._create_weapon_shapes(space)
+        # Attempt to load sprite
+        self.create_weapon_from_image(space, "assets/bow.png", max_size=self.radius * 2.5, offset=(self.radius, 0), rotation=-45)
+        
+        if not self.weapon_shapes:
+            w, l = 5, 40
+            r = self.radius
+            self.weapon_base_vertices = [[(r, -l/2), (r+w, -l/2), (r+w, l/2), (r, l/2)]]
+            self._create_weapon_shapes(space)
 
     def update(self, dt):
         super().update(dt)
