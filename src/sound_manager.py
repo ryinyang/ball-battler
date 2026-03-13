@@ -2,11 +2,17 @@ import pygame
 
 class SoundManager:
     def __init__(self):
-        if not pygame.mixer.get_init():
-            pygame.mixer.init()
+        self.initialized = False
+        try:
+            if not pygame.mixer.get_init():
+                pygame.mixer.init()
+            self.initialized = True
+        except pygame.error as e:
+            print(f"Warning: Could not initialize sound system. Running without sound. Error: {e}")
         
         self.sounds = {}
-        self._load_sounds()
+        if self.initialized:
+            self._load_sounds()
 
     def _load_sounds(self):
         # TODO: Load actual sound assets here
@@ -17,7 +23,7 @@ class SoundManager:
         pass
 
     def play_sound(self, name):
-        if name in self.sounds:
+        if self.initialized and name in self.sounds:
             self.sounds[name].play()
 
     def play_clash(self):
