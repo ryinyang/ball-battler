@@ -41,6 +41,7 @@ class Game:
 
         # Use wall type from config if available, otherwise default to 0 (default static body type)
         h_wall = self.space.on_collision(config.COLLISION_TYPE_BALL, config.COLLISION_TYPE_WALL, begin=self.handle_wall_collision)
+        h_wall_default = self.space.on_collision(config.COLLISION_TYPE_BALL, 0, begin=self.handle_wall_collision)
 
         # Game Objects
         self.arena = OctagonArena(self.space, self.WIDTH, self.HEIGHT)
@@ -55,36 +56,24 @@ class Game:
     def _populate_arena(self):
         # Bumpers in a + shape
         w, h = self.WIDTH, self.HEIGHT
-        # self.arena.add_obstacle(Bumper(self.space, w / 2 - 150, h / 2))
-        # self.arena.add_obstacle(Bumper(self.space, w / 2 + 150, h / 2))
+        self.arena.add_obstacle(Bumper(self.space, w / 2 - 150, h / 2))
+        self.arena.add_obstacle(Bumper(self.space, w / 2 + 150, h / 2))
         self.arena.add_obstacle(Bumper(self.space, w / 2, h / 2 - 150))
         self.arena.add_obstacle(Bumper(self.space, w / 2, h / 2 + 150))
         
         # Black Hole
-        # self.arena.add_anomaly(BlackHole(self.space, w / 2, h / 2))
+        self.arena.add_anomaly(BlackHole(self.space, w / 2, h / 2))
 
     def _spawn_balls(self):
         offset = 150
         
-        b1 = Rogue(offset, offset, self.space, "Rogue")
-        b1.body.velocity = (200, 200)
+        left = Rogue(offset, self.HEIGHT / 2, self.space, "Rogue")
+        left.body.velocity = (200, -200)
         
-        b3 = Paladin(offset, self.HEIGHT - offset, self.space, "Paladin")
-        b3.body.velocity = (200, -200)
+        right = Paladin(self.WIDTH - offset, self.HEIGHT / 2, self.space, "Paladin")
+        right.body.velocity = (-200, -200)
 
-        b4 = Monk(self.WIDTH - offset, self.HEIGHT - offset, self.space, "Monk")
-        b4.body.velocity = (-200, -200)
-        
-        b5 = Warrior(self.WIDTH / 2, self.HEIGHT / 2, self.space, "Warrior")
-        b5.body.velocity = (100, 100)
-        
-        b6 = Ranger(self.WIDTH / 2, offset, self.space, "Ranger")
-        b6.body.velocity = (0, 200)
-        
-        b7 = Shadow(self.WIDTH / 2, self.HEIGHT / 2 + 100, self.space, "Shadow")
-        b7.body.velocity = (100, -100)
-        
-        self.balls = [b1, b3, b4, b5, b6, b7]
+        self.balls = [left, right]
 
     def _spawn_item(self):
         # Don't spawn items if there are too many
@@ -166,6 +155,7 @@ class Game:
         ball = ball_shape.ball
         obstacle = obstacle_shape.obstacle
         obstacle.on_collide(ball)
+        self.sound_manager.play_wall_collision()
         return True
 
     def handle_item_pickup(self, arbiter, space, data):

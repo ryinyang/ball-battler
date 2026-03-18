@@ -48,5 +48,5 @@ class Potion(Item):
 
     def apply_effect(self, ball):
         old_hp = ball.hp
-        ball.hp = min(ball.max_hp, ball.hp + config.ITEM_HEAL_AMOUNT)
+        ball.hp = min(ball.max_hp, ball.hp + int(config.ITEM_HEAL_PERCENTAGE * ball.max_hp))
         print(f"{ball.name} healed for {int(ball.hp - old_hp)} HP!")
